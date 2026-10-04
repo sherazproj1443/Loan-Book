@@ -1,0 +1,16 @@
+{
+  "name": "LoanBook - Qarz Hisab",
+  "short_name": "LoanBook",
+  "description": "Apna loan hisab mobile pe",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f1210",
+  "theme_color": "#0f1210",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3135/3135707.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
