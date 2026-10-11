@@ -29,7 +29,7 @@
 <title>LoanBook v2 - Full Hisab</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f1210;--card:#171c19;--card2:#1e2521;--border:#242e27;--text:#e8efe9;--muted:#8da090;--green:#1ed760;--green-bg:rgba(30,215,96,.12);--red:#ff4d4d;--red-bg:rgba(255,77,77,.12);--yellow:#ffb020;--blue:#4da3ff;--blue-bg:rgba(77,163,255,.12)}
+:root{--bg:#0f1210;--card:#171c19;--card2:#1e2521;--border:#242e27;--text:#e8efe9;--muted:#8da090;--green:#1ed760;--red:#ff4d4d;--yellow:#ffb020;--blue:#4da3ff;--orange:#ff8c42;--purple:#a78bfa}
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
 html,body{overflow-x:hidden;width:100%}body{background:var(--bg);color:var(--text);min-height:100vh}
 .container{width:100%;max-width:390px;margin:0 auto;padding:14px 12px 110px}
@@ -40,31 +40,34 @@ html,body{overflow-x:hidden;width:100%}body{background:var(--bg);color:var(--tex
 .nav a{flex:1;white-space:nowrap;text-align:center;padding:8px 6px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:700;font-size:11px}
 .nav a.active{background:var(--text);color:#000}
 .status-bar{display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:8px 12px;margin-bottom:12px;font-size:11px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px}
-.card.debit{border-left:4px solid var(--red)}.card.credit{border-left:4px solid var(--green)}.card.balance{border-left:4px solid var(--yellow)}.card.blue{border-left:4px solid var(--blue)}
-.label{font-size:10px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:4px}
-.value{font-size:22px;font-weight:800;word-break:break-all}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.small{font-size:11px;color:var(--muted);margin-top:4px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px;margin-bottom:10px}
+.card.debit{border-left:3px solid var(--red)}.card.credit{border-left:3px solid var(--green)}.card.balance{border-left:3px solid var(--yellow)}.card.blue{border-left:3px solid var(--blue)}
+.label{font-size:9px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:3px;letter-spacing:0.5px}
+.value{font-size:17px;font-weight:800;word-break:break-all}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.grid2 .card{padding:10px 11px}
+.grid2 .value{font-size:15px}
+.small{font-size:10px;color:var(--muted);margin-top:3px}
 .btn{border:none;cursor:pointer;font-weight:700;border-radius:12px;padding:11px 10px;font-size:11px;display:flex;justify-content:center;align-items:center;flex:1}
 .btn-primary{background:var(--text);color:#000}.btn-debit{background:var(--red);color:#fff}.btn-credit{background:var(--green);color:#000}.btn-blue{background:var(--blue);color:#fff}.btn-outline{background:var(--card);color:var(--text);border:1px solid var(--border)}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;place-items:center;z-index:50;padding:12px}
 .modal-bg.open{display:grid}.modal{width:100%;max-width:360px;background:#1a201c;border:1px solid #2a352e;border-radius:18px;padding:16px;max-height:90vh;overflow:auto}
 .field{margin-bottom:10px}.field label{font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:4px}
 .field input,.field select,.field textarea{width:100%;background:#121512;border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:13px;outline:none}
-.chip-row{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;scrollbar-width:none}.chip-row::-webkit-scrollbar{display:none}
-.chip{white-space:nowrap;padding:7px 12px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:11px;font-weight:700;flex-shrink:0;cursor:pointer}
-.chip.active{background:var(--text);color:#000}
 .row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:12px;margin-bottom:8px}
 .badge{font-size:9px;padding:3px 7px;border-radius:6px;font-weight:800}
 .badge.credit{background:rgba(30,215,96,.15);color:var(--green)}.badge.debit{background:rgba(255,77,77,.15);color:var(--red)}.badge.expense{background:rgba(255,176,32,.15);color:var(--yellow)}.badge.income{background:rgba(77,163,255,.15);color:var(--blue)}
-.actions{display:flex;gap:6px;margin-top:8px}
-.btn-sm{border:1px solid var(--border);background:var(--card2);color:var(--text);padding:5px 9px;border-radius:8px;font-size:10px;cursor:pointer}
 .setup-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px}
 .setup-card input{width:100%;background:#121512;border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:11px;margin-top:6px}
 .type-switch{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:#121512;padding:4px;border-radius:10px;margin-bottom:12px}
 .type-switch button{padding:8px;border-radius:8px;background:transparent;color:var(--muted);font-weight:700;border:1px solid transparent;font-size:11px}
 .type-switch button.active{background:var(--text);color:#000}
+.chart-wrap{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px}
+.legend{flex:1;font-size:10px}
+.legend-item{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.dot{width:8px;height:8px;border-radius:50%}
+.date-filter{display:flex;gap:6px;align-items:center;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:6px 8px;margin-bottom:10px}
+.date-filter input{background:#121512;border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font-size:11px;flex:1}
 </style>
 </head>
 <body>
@@ -86,96 +89,102 @@ html,body{overflow-x:hidden;width:100%}body{background:var(--bg);color:var(--tex
 </div>
 
 <div class="grid2">
-<div class="card credit"><div class="label">Total Income (Salary)</div><div class="value" id="totalSalary">Rs 0</div><div class="small" id="salaryCount">0 entries</div></div>
-<div class="card debit"><div class="label">Total Loan Liya</div><div class="value" id="totalLoanLiya">Rs 0</div><div class="small" id="loanLiyaCount">0 entries</div></div>
+<div class="card credit"><div class="label">Income (Salary)</div><div class="value" id="totalSalary">Rs 0</div><div class="small" id="salaryCount">0 entries</div></div>
+<div class="card debit"><div class="label">Loan Liya</div><div class="value" id="totalLoanLiya">Rs 0</div><div class="small" id="loanLiyaCount">0</div></div>
 </div>
 
-<div class="card blue"><div class="label">Total Available Cash (Income + Loans)</div><div class="value" id="totalAvailable">Rs 0</div><div class="small">Salary + Loan Liya</div></div>
+<div class="card blue" style="padding:11px"><div class="label">Total Available Cash</div><div class="value" id="totalAvailable">Rs 0</div><div class="small">Salary + Loan Liya</div></div>
 
 <div class="grid2">
 <div class="card credit"><div class="label">Loan Diya</div><div class="value" id="totalLoanDiya">Rs 0</div><div class="small">Logon ko diya</div></div>
 <div class="card expense"><div class="label">Total Expenses</div><div class="value" id="totalExpenses">Rs 0</div><div class="small" id="expenseCount">0 kharche</div></div>
 </div>
 
-<div class="card balance"><div class="label">Net Savings / Bacha Hua</div><div class="value" id="netSavings">Rs 0</div><div class="small" id="savingsMsg">Available - Expenses - Loan Diya</div></div>
+<div class="card balance"><div class="label">Net Savings</div><div class="value" id="netSavings">Rs 0</div><div class="small" id="savingsMsg">--</div></div>
 
-<div class="card"><div class="label">Expense Breakdown</div><div id="expenseBreakdown"></div></div>
+<!-- Expense Breakdown with Month Filter -->
+<div class="card" style="padding:14px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+<b style="font-size:12px">Expenses Breakdown</b><span id="breakdownMonthLabel" style="font-size:10px;color:var(--muted)"></span>
+</div>
+<div class="date-filter">
+<input type="month" id="breakdownMonth">
+<button class="btn btn-outline" style="padding:6px 10px;font-size:10px;flex:0" onclick="setCurrentMonth()">Current</button>
+<button class="btn btn-outline" style="padding:6px 10px;font-size:10px;flex:0" onclick="setLastMonth()">Last</button>
+</div>
+<div style="display:flex;gap:6px;margin-bottom:8px">
+<input type="date" id="customFrom" style="flex:1;background:#121512;border:1px solid var(--border);border-radius:8px;padding:6px;color:var(--text);font-size:10px">
+<input type="date" id="customTo" style="flex:1;background:#121512;border:1px solid var(--border);border-radius:8px;padding:6px;color:var(--text);font-size:10px">
+<button class="btn btn-blue" style="padding:6px 8px;font-size:10px;flex:0" onclick="applyCustomRange()">Go</button>
+</div>
+<div id="expenseBreakdown"></div>
+</div>
 
-<div class="card"><div class="label">Recent Activity</div><div id="recentList"></div></div>
+<!-- Circular Chart for Last Month / Selected Month -->
+<div class="chart-wrap">
+<canvas id="expenseChart" width="110" height="110" style="width:110px;height:110px"></canvas>
+<div class="legend" id="chartLegend"></div>
+</div>
 
-<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-<button class="btn btn-credit" onclick="openModal('income')">+ Income</button>
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:12px">Recent Activity</b><span style="font-size:10px;color:var(--muted)">Last 3</span></div>
+<div id="recentList"></div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:12px">
+<button class="btn btn-credit" onclick="openModal('loan')">+ Loan</button>
 <button class="btn btn-blue" onclick="openModal('expense')">+ Expense</button>
-<button class="btn btn-debit" onclick="location.href='transactions.html'">+ Loan</button>
+<button class="btn btn-primary" onclick="openModal('income')">+ Income</button>
 </div>
 </div>
 
-<!-- Income/Expense Modal -->
-<div class="modal-bg" id="modalBg">
-<div class="modal">
-<h2 id="modalTitle">Add</h2>
+<div class="modal-bg" id="modalBg"><div class="modal">
+<h2 id="modalTitle">Add Entry</h2>
 <div class="type-switch" id="modalTypeSwitch">
-<button id="btnIncome" onclick="setModalType('income')">Income</button>
-<button id="btnExpense" onclick="setModalType('expense')">Expense</button>
 <button id="btnLoan" onclick="setModalType('loan')">Loan</button>
+<button id="btnExpense" onclick="setModalType('expense')">Expense</button>
+<button id="btnIncome" onclick="setModalType('income')">Income</button>
 </div>
-
-<div id="incomeFields">
-<div class="field"><label>Source</label><select id="incomeSource"><option value="salary">Salary</option><option value="freelance">Freelance</option><option value="other">Other Income</option></select></div>
+<div id="loanFields">
+<div class="field"><label>Type</label><select id="loanType"><option value="credit">Diya (Credit)</option><option value="debit">Liya (Debit)</option></select></div>
+<div class="field"><label>Name</label><input id="loanName" placeholder="Ahmed Bhai"></div>
 </div>
-
+<div id="incomeFields" style="display:none">
+<div class="field"><label>Source</label><select id="incomeSource"><option value="salary">Salary</option><option value="freelance">Freelance</option><option value="loan_repayment">Loan Repayment</option><option value="other">Other</option></select></div>
+</div>
 <div id="expenseFields" style="display:none">
 <div class="field"><label>Category</label><select id="expenseCat">
-<option value="household">Household</option>
-<option value="grocery">Grocery Shopping</option>
-<option value="clothing">Clothing Shopping</option>
-<option value="cigarette">Cigarette</option>
-<option value="canteen_duty">Canteen - Duty</option>
-<option value="canteen_barrack">Canteen - Barrack</option>
-<option value="loan_return">Loan Return (Dena)</option>
-<option value="credit_card">Credit Card Repayment</option>
-<option value="travel">Travel</option>
-<option value="committee">Committee / Daisy (Bina Interest)</option>
-<option value="utilities">Utilities / Bills</option>
-<option value="other">Other</option>
+<option value="household">Household</option><option value="grocery">Grocery</option><option value="clothing">Clothing</option><option value="cigarette">Cigarette</option><option value="canteen_duty">Canteen - Duty</option><option value="canteen_barrack">Canteen - Barrack</option><option value="loan_return">Loan Return</option><option value="credit_card">Credit Card</option><option value="travel">Travel</option><option value="committee">Committee/Daisy</option><option value="utilities">Utilities</option><option value="other">Other</option>
 </select></div>
 </div>
-
-<div id="loanFields" style="display:none">
-<div class="field"><label>Loan Type</label><select id="loanType"><option value="debit">Loan Liya (Liability)</option><option value="credit">Loan Diya (Asset)</option></select></div>
-<div class="field"><label>Person Name</label><input id="loanName" placeholder="Ahmed Bhai"></div>
-</div>
-
-<div class="field"><label>Amount (Rs)</label><input id="pAmount" type="number" placeholder="5000"></div>
+<div class="field"><label>Amount</label><input id="pAmount" type="number"></div>
 <div class="field"><label>Date</label><input id="pDate" type="date"></div>
-<div class="field"><label>Note</label><textarea id="pNote" rows="2" placeholder="Details"></textarea></div>
+<div class="field"><label>Note</label><textarea id="pNote" placeholder="Note..."></textarea></div>
 <div style="display:flex;gap:8px"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveEntry()">Save</button></div>
-</div>
-</div>
+</div></div>
 
 <script type="module">
 import { JSONBIN_CONFIG } from './jsonbin-config.js';
-let CONFIG = JSONBIN_CONFIG;
-const saved = localStorage.getItem('jsonbin_config');
-if(saved){try{const s=JSON.parse(saved); if(s.BIN_ID!='YOUR_BIN_ID') CONFIG=s;}catch(e){}}
-let data = {loans:[], incomes:[], expenses:[]};
-let modalType='income';
-let editId=null;
+let CONFIG=JSONBIN_CONFIG; const s=localStorage.getItem('jsonbin_config'); if(s){try{const j=JSON.parse(s); if(j.BIN_ID!='YOUR_BIN_ID') CONFIG=j;}catch(e){}}
+let data={loans:[], incomes:[], expenses:[]};
+let modalType='loan'; let editId=null;
+let selectedMonth = new Date().toISOString().slice(0,7); // YYYY-MM
+let customRange = null; // {from,to}
 
-function isConfigured(){return CONFIG.BIN_ID!='YOUR_BIN_ID';}
+function isConfigured(){ return CONFIG.BIN_ID && CONFIG.BIN_ID!=='YOUR_BIN_ID' && CONFIG.API_KEY; }
 
 async function loadData(){
- if(!isConfigured()){document.getElementById('setupCard').style.display='block'; document.getElementById('statusText').textContent='Setup required'; return;}
- document.getElementById('statusText').textContent='Loading...';
+ if(!isConfigured()){
+  document.getElementById('setupCard').style.display='block';
+  document.getElementById('statusText').textContent='Setup required';
+  const local=localStorage.getItem('loanbook_v2_full');
+  if(local){ try{ data=JSON.parse(local); renderDashboard(); }catch{} }
+  return;
+ }
  try{
   const res=await fetch(CONFIG.API_URL+'/'+CONFIG.BIN_ID+'/latest',{headers:{'X-Master-Key':CONFIG.API_KEY}});
-  const j=await res.json();
-  const rec=j.record;
-  // backward compatible
-  data.loans = rec.loans || [];
-  data.incomes = rec.incomes || [];
-  data.expenses = rec.expenses || [];
-  // if old structure was array
+  const j=await res.json(); const rec=j.record;
+  data.loans=rec.loans||[]; data.incomes=rec.incomes||[]; data.expenses=rec.expenses||[];
   if(Array.isArray(rec) ){ data.loans=rec; }
   document.getElementById('statusText').textContent='Online • '+(data.loans.length+data.incomes.length+data.expenses.length)+' records';
   document.getElementById('syncText').textContent=new Date().toLocaleTimeString();
@@ -190,7 +199,6 @@ async function loadData(){
 
 async function saveData(){
  localStorage.setItem('loanbook_v2_full', JSON.stringify(data));
- // also save old format for backward compat
  localStorage.setItem('loanbook_v2', JSON.stringify(data.loans));
  if(!isConfigured()) return;
  try{
@@ -202,44 +210,133 @@ async function saveData(){
 
 window.fmt=(n)=>'Rs '+Number(n).toLocaleString('en-PK');
 
+function getFilteredExpenses(){
+ if(customRange){
+  const from = new Date(customRange.from);
+  const to = new Date(customRange.to);
+  return data.expenses.filter(e=>{ const d=new Date(e.date); return d>=from && d<=to; });
+ }
+ // filter by selected month YYYY-MM
+ return data.expenses.filter(e=> e.date && e.date.startsWith(selectedMonth));
+}
+
+function getLastMonthExpenses(){
+ const now = new Date();
+ const last = new Date(now.getFullYear(), now.getMonth()-1, 1);
+ const ym = last.toISOString().slice(0,7);
+ return data.expenses.filter(e=> e.date && e.date.startsWith(ym));
+}
+
 window.renderDashboard=()=>{
  const totalSalary = data.incomes.filter(i=>i.source!=='loan').reduce((s,x)=>s+ +x.amount,0);
  const totalLoanLiya = data.loans.filter(t=>t.type==='debit' && t.status!=='paid').reduce((s,x)=>s+ +x.amount,0) + data.incomes.filter(i=>i.source==='loan').reduce((s,x)=>s+ +x.amount,0);
  const totalLoanDiya = data.loans.filter(t=>t.type==='credit' && t.status!=='paid').reduce((s,x)=>s+ +x.amount,0);
- const totalExpenses = data.expenses.reduce((s,x)=>s+ +x.amount,0);
+ const totalExpensesAll = data.expenses.reduce((s,x)=>s+ +x.amount,0);
  const totalAvailable = totalSalary + totalLoanLiya;
- const netSavings = totalAvailable - totalExpenses - totalLoanDiya;
+ const netSavings = totalAvailable - totalExpensesAll - totalLoanDiya;
 
  document.getElementById('totalSalary').textContent=fmt(totalSalary);
  document.getElementById('totalLoanLiya').textContent=fmt(totalLoanLiya);
  document.getElementById('totalAvailable').textContent=fmt(totalAvailable);
  document.getElementById('totalLoanDiya').textContent=fmt(totalLoanDiya);
- document.getElementById('totalExpenses').textContent=fmt(totalExpenses);
+ document.getElementById('totalExpenses').textContent=fmt(totalExpensesAll);
  document.getElementById('netSavings').textContent=fmt(netSavings);
  document.getElementById('salaryCount').textContent=data.incomes.length+' entries';
  document.getElementById('expenseCount').textContent=data.expenses.length+' kharche';
  document.getElementById('savingsMsg').textContent = netSavings>=0 ? 'Bachat ho rahi hai' : 'Kharche zyada hain';
 
- // breakdown
+ // breakdown - current month or custom
+ const filtered = getFilteredExpenses();
  const catMap={};
- data.expenses.forEach(e=>{catMap[e.category]=(catMap[e.category]||0)+ +e.amount;});
+ filtered.forEach(e=>{catMap[e.category]=(catMap[e.category]||0)+ +e.amount;});
  const breakdownEl=document.getElementById('expenseBreakdown');
  const catNames={household:'Household', grocery:'Grocery', clothing:'Clothing', cigarette:'Cigarette', canteen_duty:'Canteen - Duty', canteen_barrack:'Canteen - Barrack', loan_return:'Loan Return', credit_card:'Credit Card', travel:'Travel', committee:'Committee/Daisy', utilities:'Bills', other:'Other'};
- breakdownEl.innerHTML = Object.entries(catMap).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px"><span>${catNames[k]||k}</span><b>${fmt(v)}</b></div>`).join('') || '<div style="color:var(--muted);font-size:11px">Koi expense nahi</div>';
+ const totalFiltered = filtered.reduce((s,x)=>s+ +x.amount,0);
+ document.getElementById('breakdownMonthLabel').textContent = customRange ? customRange.from+' to '+customRange.to : selectedMonth + ' • ' + fmt(totalFiltered);
+ breakdownEl.innerHTML = Object.entries(catMap).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{
+  const pct = totalFiltered>0 ? Math.round((v/totalFiltered)*100) : 0;
+  return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:11px"><span>${catNames[k]||k} <small style="color:var(--muted)">${pct}%</small></span><b>${fmt(v)}</b></div>`;
+ }).join('') || '<div style="color:var(--muted);font-size:11px">Koi expense nahi is month</div>';
 
- // recent
+ // circular chart - use filtered (current selected) to show last month concept
+ drawDonutChart(filtered);
+
+ // recent - only 3
  const all = [
   ...data.loans.map(x=>({...x, _t:'loan', _date:x.date})),
   ...data.incomes.map(x=>({...x, _t:'income', _date:x.date, name:x.source})),
   ...data.expenses.map(x=>({...x, _t:'expense', _date:x.date, name:x.category}))
- ].sort((a,b)=> new Date(b._date) - new Date(a._date)).slice(0,8);
+ ].sort((a,b)=> new Date(b._date) - new Date(a._date)).slice(0,3);
  document.getElementById('recentList').innerHTML = all.map(r=>{
   const typeClass = r._t==='income'?'income': r._t==='expense'?'expense' : r.type==='credit'?'credit':'debit';
   const label = r._t==='income'?'INCOME': r._t==='expense'?'EXPENSE': r.type==='credit'?'DIYA':'LIYA';
   const nm = r.name || r.source || r.category;
-  return `<div class=row><div><b style="font-size:12px">${nm}</b><br><span class="badge ${typeClass}">${label}</span> <span style="font-size:10px;color:var(--muted)">${r._date}</span></div><b>${fmt(r.amount)}</b></div>`;
+  return `<div class=row><div><b style="font-size:11px">${nm}</b><br><span class="badge ${typeClass}">${label}</span> <span style="font-size:10px;color:var(--muted)">${r._date}</span></div><b style="font-size:12px">${fmt(r.amount)}</b></div>`;
  }).join('') || '<div style="color:var(--muted);font-size:11px">No activity</div>';
 }
+
+function drawDonutChart(expList){
+ const canvas = document.getElementById('expenseChart');
+ const ctx = canvas.getContext('2d');
+ const catMap={};
+ expList.forEach(e=>{catMap[e.category]=(catMap[e.category]||0)+ +e.amount;});
+ const entries = Object.entries(catMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+ const total = entries.reduce((s,[,v])=>s+v,0);
+ const colors = ['#1ed760','#4da3ff','#ffb020','#ff4d4d','#a78bfa','#ff8c42'];
+ ctx.clearRect(0,0,110,110);
+ if(total===0){
+  ctx.fillStyle='#1e2521'; ctx.beginPath(); ctx.arc(55,55,45,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#8da090'; ctx.font='10px Inter'; ctx.textAlign='center'; ctx.fillText('No data',55,58);
+  document.getElementById('chartLegend').innerHTML='<div style="color:var(--muted);font-size:10px">No expenses</div>';
+  return;
+ }
+ let start=-Math.PI/2;
+ entries.forEach(([k,v],i)=>{
+  const angle = (v/total)*Math.PI*2;
+  ctx.fillStyle=colors[i%colors.length];
+  ctx.beginPath(); ctx.moveTo(55,55); ctx.arc(55,55,45,start,start+angle); ctx.closePath(); ctx.fill();
+  start+=angle;
+ });
+ // inner white circle for donut effect
+ ctx.fillStyle='#171c19'; ctx.beginPath(); ctx.arc(55,55,28,0,Math.PI*2); ctx.fill();
+ ctx.fillStyle='#e8efe9'; ctx.font='bold 11px Inter'; ctx.textAlign='center'; ctx.fillText(fmt(total).replace('Rs ',''),55,58);
+ // legend
+ const catNames={household:'Household', grocery:'Grocery', clothing:'Clothing', cigarette:'Cig', canteen_duty:'Duty', canteen_barrack:'Barrack', loan_return:'Loan Ret', credit_card:'CC', travel:'Travel', committee:'Committee', utilities:'Bills', other:'Other'};
+ document.getElementById('chartLegend').innerHTML = entries.map(([k,v],i)=>{
+  const pct = Math.round((v/total)*100);
+  return `<div class="legend-item"><span class="dot" style="background:${colors[i%colors.length]}"></span><span>${catNames[k]||k}</span><b style="margin-left:auto">${pct}%</b></div>`;
+ }).join('');
+}
+
+window.setCurrentMonth=()=>{
+ customRange=null;
+ selectedMonth = new Date().toISOString().slice(0,7);
+ document.getElementById('breakdownMonth').value=selectedMonth;
+ document.getElementById('customFrom').value=''; document.getElementById('customTo').value='';
+ renderDashboard();
+}
+window.setLastMonth=()=>{
+ customRange=null;
+ const d=new Date(); d.setMonth(d.getMonth()-1);
+ selectedMonth = d.toISOString().slice(0,7);
+ document.getElementById('breakdownMonth').value=selectedMonth;
+ document.getElementById('customFrom').value=''; document.getElementById('customTo').value='';
+ renderDashboard();
+}
+window.applyCustomRange=()=>{
+ const from=document.getElementById('customFrom').value;
+ const to=document.getElementById('customTo').value;
+ if(!from||!to){ alert('Dono dates select karo'); return; }
+ customRange={from,to};
+ selectedMonth=''; document.getElementById('breakdownMonth').value='';
+ renderDashboard();
+}
+
+document.getElementById('breakdownMonth').addEventListener('change',e=>{
+ customRange=null;
+ selectedMonth=e.target.value;
+ renderDashboard();
+});
 
 window.openModal=(type)=>{modalType=type; setModalType(type); document.getElementById('pDate').valueAsDate=new Date(); document.getElementById('modalBg').classList.add('open'); editId=null;}
 window.closeModal=()=>document.getElementById('modalBg').classList.remove('open');
@@ -286,6 +383,7 @@ window.saveConfig=()=>{
  loadData();
 }
 
+document.getElementById('breakdownMonth').value=selectedMonth;
 loadData();
 </script>
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
