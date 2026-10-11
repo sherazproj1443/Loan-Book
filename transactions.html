@@ -1,4 +1,4 @@
-<!<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en"><head><style>
 @font-face {
   font-family: "Optimistic";
@@ -96,8 +96,92 @@ import { JSONBIN_CONFIG } from './jsonbin-config.js';
 let CONFIG=JSONBIN_CONFIG; const s=localStorage.getItem('jsonbin_config'); if(s){try{const j=JSON.parse(s); if(j.BIN_ID!='YOUR_BIN_ID') CONFIG=j;}catch(e){}}
 let data={loans:[], incomes:[], expenses:[]}; let filter='all'; let editId=null;
 
-async function load(){const res=await fetch(CONFIG.API_URL+'/'+CONFIG.BIN_ID+'/latest',{headers:{'X-Master-Key':CONFIG.API_KEY}}); const j=await res.json(); const rec=j.record; data.loans=rec.loans||[]; data.incomes=rec.incomes||[]; data.expenses=rec.expenses||[]; if(Array.isArray(rec)) data.loans=rec; render(); document.getElementById('statusText').textContent='Online • '+data.loans.length;}
-async function save(){localStorage.setItem('loanbook_v2_full', JSON.stringify(data)); await fetch(CONFIG.API_URL+'/'+CONFIG.BIN_ID,{method:'PUT', headers:{'Content-Type':'application/json','X-Master-Key':CONFIG.API_KEY}, body:JSON.stringify(data)});}
+function getProfilesForSettle(){
+ const map={};
+ data.loans.forEach(t=>{
+  const key = (t.name||'').trim().toLowerCase();
+  if(!key) return;
+  if(!map[key]){
+   map[key]={key, totalCredit:0, totalDebit:0, countPending:0, entries:[]};
+  }
+  if(t.status!=='paid'){
+   map[key].countPending++;
+   if(t.type==='credit') map[key].totalCredit+=+t.amount;
+   else map[key].totalDebit+=+t.amount;
+  }
+  map[key].entries.push(t);
+ });
+ const repaymentCats=['loan_return','credit_card','loan_repayment'];
+ Object.values(map).forEach(profile=>{
+  let totalRepaid=0;
+  data.expenses.forEach(exp=>{
+   const cat=(exp.category||'').toLowerCase();
+   const isRepay = repaymentCats.includes(cat) || cat.includes('loan') || cat.includes('return');
+   if(!isRepay) return;
+   const note=(exp.note||'').toLowerCase();
+   if(note.includes(profile.key)){
+    totalRepaid+=+exp.amount;
+   }
+  });
+  // Income repayments (e.g., Zohaib loan repayment received)
+  data.incomes.forEach(inc=>{
+   const src=(inc.source||'').toLowerCase();
+   const isLoanRepay = src.includes('loan') && (src.includes('repay') || src.includes('return'));
+   if(!isLoanRepay) return;
+   const note=(inc.note||'').toLowerCase();
+   if(note.includes(profile.key)){
+    totalRepaid+=+inc.amount;
+   }
+  });
+  profile.totalRepaid=totalRepaid;
+  profile.net = profile.totalCredit - profile.totalDebit;
+  if(profile.net>0) profile.adjustedNet = profile.net - totalRepaid;
+  else if(profile.net<0) profile.adjustedNet = profile.net + totalRepaid;
+  else profile.adjustedNet = profile.net;
+ });
+ return Object.values(map);
+}
+
+async function autoSettleIfNeeded(){
+ const profiles = getProfilesForSettle();
+ let settled=0;
+ profiles.forEach(p=>{
+  if(p.adjustedNet===0 && p.countPending>0){
+   data.loans.forEach(loan=>{
+    if((loan.name||'').trim().toLowerCase()===p.key && loan.status!=='paid'){
+     loan.status='paid';
+     settled++;
+    }
+   });
+  }
+ });
+ if(settled>0){
+  await save();
+  return settled;
+ }
+ return 0;
+}
+
+async function load(){
+ try{
+  const res=await fetch(CONFIG.API_URL+'/'+CONFIG.BIN_ID+'/latest',{headers:{'X-Master-Key':CONFIG.API_KEY}});
+  const j=await res.json(); const rec=j.record;
+  data.loans=rec.loans||[]; data.incomes=rec.incomes||[]; data.expenses=rec.expenses||[];
+  if(Array.isArray(rec)) data.loans=rec;
+  const settled = await autoSettleIfNeeded();
+  render();
+  document.getElementById('statusText').textContent='Online • '+data.loans.length + (settled? ' • '+settled+' auto-paid':'');
+  if(settled>0){
+   document.getElementById('syncText').textContent=settled+' loans auto marked paid (net zero)';
+  }
+ }catch(e){
+  const local=localStorage.getItem('loanbook_v2_full');
+  if(local){ try{ data=JSON.parse(local); }catch{} }
+  render();
+  document.getElementById('statusText').textContent='Offline • Local';
+ }
+}
+async function save(){localStorage.setItem('loanbook_v2_full', JSON.stringify(data)); try{await fetch(CONFIG.API_URL+'/'+CONFIG.BIN_ID,{method:'PUT', headers:{'Content-Type':'application/json','X-Master-Key':CONFIG.API_KEY}, body:JSON.stringify(data)});}catch(e){}}
 
 window.fmt=(n)=>'Rs '+Number(n).toLocaleString('en-PK');
 window.render=()=>{
@@ -145,7 +229,7 @@ window.saveLoan=async()=>{
  if(!name||!amount){alert('Name/Amount required'); return;}
  if(editId){const r=data.loans.find(x=>String(x.id)===String(editId)); if(r){r.name=name; r.amount=amount; r.date=date||new Date().toISOString().slice(0,10); r.type=type; r.status=status; r.note=note;}}
  else{data.loans.unshift({id:Date.now(), name, amount, date:date||new Date().toISOString().slice(0,10), note, type, status});}
- closeModal(); render(); await save();
+ closeModal(); await save(); const settled = await autoSettleIfNeeded(); render(); if(settled>0){ await save(); render(); }
 }
 
 window.delLoan=async(id)=>{if(!confirm('Delete?')) return; data.loans=data.loans.filter(x=>String(x.id)!==String(id)); render(); await save();}

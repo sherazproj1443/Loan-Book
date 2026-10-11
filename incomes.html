@@ -77,6 +77,7 @@ html,body{overflow-x:hidden;width:100%}body{background:var(--bg);color:var(--tex
 <button class="chip active" onclick="setSrc('all',this)">All</button>
 <button class="chip" onclick="setSrc('salary',this)">Salary</button>
 <button class="chip" onclick="setSrc('freelance',this)">Freelance</button>
+<button class="chip" onclick="setSrc('loan_repayment',this)">Loan Repayment</button>
 <button class="chip" onclick="setSrc('other',this)">Other</button>
 </div>
 
@@ -87,7 +88,7 @@ html,body{overflow-x:hidden;width:100%}body{background:var(--bg);color:var(--tex
 
 <div class="modal-bg" id="modalBg"><div class="modal">
 <h2>Add / Edit Income</h2>
-<div class="field"><label>Source</label><select id="incSource"><option value="salary">Salary</option><option value="freelance">Freelance</option><option value="other">Other</option></select></div>
+<div class="field"><label>Source</label><select id="incSource"><option value="salary">Salary</option><option value="freelance">Freelance</option><option value="loan_repayment">Loan Repayment</option><option value="other">Other</option></select></div>
 <div class="field"><label>Amount</label><input id="incAmount" type="number"></div>
 <div class="field"><label>Date</label><input id="incDate" type="date"></div>
 <div class="field"><label>Note</label><textarea id="incNote"></textarea></div>
