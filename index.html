@@ -28,6 +28,7 @@
 <meta name="theme-color" content="#0f1210">
 <title>LoanBook v2 - Full Hisab</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{--bg:#0f1210;--card:#171c19;--card2:#1e2521;--border:#242e27;--text:#e8efe9;--muted:#8da090;--green:#1ed760;--red:#ff4d4d;--yellow:#ffb020;--blue:#4da3ff;--orange:#ff8c42;--purple:#a78bfa}
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
@@ -101,6 +102,20 @@ html,body{overflow-x:hidden;width:100%}body{background:var(--bg);color:var(--tex
 </div>
 
 <div class="card balance"><div class="label">Net Savings</div><div class="value" id="netSavings">Rs 0</div><div class="small" id="savingsMsg">--</div></div>
+
+<div class="card" style="background:linear-gradient(135deg,#171c19,#1e2521);border:1px dashed #2a352e">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><b style="font-size:12px">📤 Export Records</b><span style="font-size:9px;color:var(--muted)">Excel / CSV</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+<button class="btn btn-primary" style="font-size:10px;padding:9px" onclick="exportExcel()">📊 Full Excel</button>
+<button class="btn btn-outline" style="font-size:10px;padding:9px" onclick="exportCSV()">📄 CSV Ledger</button>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+<button class="btn btn-outline" style="font-size:9px;padding:7px" onclick="exportSheet('expenses')">Expenses</button>
+<button class="btn btn-outline" style="font-size:9px;padding:7px" onclick="exportSheet('incomes')">Incomes</button>
+<button class="btn btn-outline" style="font-size:9px;padding:7px" onclick="exportSheet('loans')">Loans</button>
+</div>
+<div class="small" style="margin-top:8px">Includes opening/closing balance, category, date, notes, amount</div>
+</div>
 
 <!-- Expense Breakdown with Month Filter -->
 <div class="card" style="padding:14px">
@@ -206,6 +221,142 @@ async function saveData(){
   document.getElementById('statusText').textContent='Saved • Online';
   document.getElementById('syncText').textContent=new Date().toLocaleTimeString();
  }catch(e){document.getElementById('statusText').textContent='Saved Locally';}
+}
+
+
+// ===== EXPORT FUNCTIONS =====
+function buildLedger(){
+ // combine all transactions chronologically with running balance
+ const all=[];
+ data.incomes.forEach(i=> all.push({date:i.date, type:'INCOME', category:i.source, amount:+i.amount, note:i.note||'', flow:+i.amount}));
+ data.expenses.forEach(e=> all.push({date:e.date, type:'EXPENSE', category:e.category, amount:+e.amount, note:e.note||'', flow:-e.amount}));
+ data.loans.forEach(l=>{
+  if(l.type==='debit'){ // Liya = cash in
+   all.push({date:l.date, type:'LOAN_LIYA', category:l.name, amount:+l.amount, note:l.note||'', status:l.status, flow:+l.amount});
+  } else {
+   all.push({date:l.date, type:'LOAN_DIYA', category:l.name, amount:+l.amount, note:l.note||'', status:l.status, flow:-l.amount});
+  }
+ });
+ all.sort((a,b)=> new Date(a.date) - new Date(b.date));
+ let running=0;
+ const ledger = all.map(t=>{
+  running+=t.flow;
+  return {...t, running};
+ });
+ return {ledger, opening:0, closing:running};
+}
+
+window.exportExcel=()=>{
+ const {ledger, opening, closing} = buildLedger();
+ const totalSalary = data.incomes.reduce((s,x)=>s+ +x.amount,0);
+ const totalLoanLiya = data.loans.filter(t=>t.type==='debit').reduce((s,x)=>s+ +x.amount,0);
+ const totalLoanDiya = data.loans.filter(t=>t.type==='credit').reduce((s,x)=>s+ +x.amount,0);
+ const totalExp = data.expenses.reduce((s,x)=>s+ +x.amount,0);
+
+ const wb = XLSX.utils.book_new();
+
+ // Summary Sheet
+ const summary = [
+  ['LoanBook v2 - Full Export'],
+  ['Generated', new Date().toLocaleString()],
+  [],
+  ['Opening Balance', opening],
+  ['Total Incomes', totalSalary],
+  ['Total Loan Liya (Debit)', totalLoanLiya],
+  ['Total Available (Income+Liya)', totalSalary+totalLoanLiya],
+  ['Total Loan Diya (Credit)', totalLoanDiya],
+  ['Total Expenses', totalExp],
+  ['Closing Balance / Net Savings', closing],
+  [],
+  ['Note: Closing = Opening + Incomes + Loan Liya - Loan Diya - Expenses']
+ ];
+ const wsSummary = XLSX.utils.aoa_to_sheet(summary);
+ XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+ // Ledger with running balance
+ const ledgerRows = [['Date','Type','Category/Name','Amount','Flow (+in/-out)','Running Balance','Note','Status']];
+ ledger.forEach(l=>{
+  ledgerRows.push([l.date, l.type, l.category, l.amount, l.flow, l.running, l.note, l.status||'']);
+ });
+ const wsLedger = XLSX.utils.aoa_to_sheet(ledgerRows);
+ XLSX.utils.book_append_sheet(wb, wsLedger, 'Full Ledger');
+
+ // Incomes
+ const incRows = [['ID','Source','Amount','Date','Note']];
+ data.incomes.forEach(i=> incRows.push([i.id, i.source, i.amount, i.date, i.note]));
+ const wsInc = XLSX.utils.aoa_to_sheet(incRows);
+ XLSX.utils.book_append_sheet(wb, wsInc, 'Incomes');
+
+ // Expenses
+ const expRows = [['ID','Category','Amount','Date','Note']];
+ data.expenses.forEach(e=> expRows.push([e.id, e.category, e.amount, e.date, e.note]));
+ const wsExp = XLSX.utils.aoa_to_sheet(expRows);
+ XLSX.utils.book_append_sheet(wb, wsExp, 'Expenses');
+
+ // Loans
+ const loanRows = [['ID','Name','Type (credit=Diya/debit=Liya)','Amount','Date','Status','Note']];
+ data.loans.forEach(l=> loanRows.push([l.id, l.name, l.type, l.amount, l.date, l.status, l.note]));
+ const wsLoan = XLSX.utils.aoa_to_sheet(loanRows);
+ XLSX.utils.book_append_sheet(wb, wsLoan, 'Loans');
+
+ // Profiles aggregated
+ const profilesMap={};
+ data.loans.forEach(t=>{
+  const k=t.name.trim().toLowerCase();
+  if(!profilesMap[k]) profilesMap[k]={name:t.name, totalDiya:0, totalLiya:0, pendingDiya:0, pendingLiya:0};
+  if(t.type==='credit'){ profilesMap[k].totalDiya+=+t.amount; if(t.status!=='paid') profilesMap[k].pendingDiya+=+t.amount; }
+  else { profilesMap[k].totalLiya+=+t.amount; if(t.status!=='paid') profilesMap[k].pendingLiya+=+t.amount; }
+ });
+ const profRows = [['Name','Total Diya','Total Liya','Pending Diya','Pending Liya','Net Pending (Diya-Liya)']];
+ Object.values(profilesMap).forEach(p=>{
+  profRows.push([p.name, p.totalDiya, p.totalLiya, p.pendingDiya, p.pendingLiya, p.pendingDiya-p.pendingLiya]);
+ });
+ const wsProf = XLSX.utils.aoa_to_sheet(profRows);
+ XLSX.utils.book_append_sheet(wb, wsProf, 'Profiles');
+
+ XLSX.writeFile(wb, 'LoanBook_Full_Export_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+window.exportCSV=()=>{
+ const {ledger} = buildLedger();
+ let csv = 'Date,Type,Category/Name,Amount,Flow,Running Balance,Note,Status\n';
+ ledger.forEach(l=>{
+  const safeNote = (l.note||'').replace(/"/g,'""');
+  csv += `${l.date},${l.type},"${l.category}",${l.amount},${l.flow},${l.running},"${safeNote}",${l.status||''}\n`;
+ });
+ const blob = new Blob([csv], {type:'text/csv'});
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a'); a.href=url; a.download='LoanBook_Ledger_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+ URL.revokeObjectURL(url);
+}
+
+window.exportSheet=(type)=>{
+ let rows, filename;
+ if(type==='expenses'){
+  rows = [['ID','Category','Amount','Date','Note']];
+  data.expenses.forEach(e=> rows.push([e.id, e.category, e.amount, e.date, e.note]));
+  filename='Expenses';
+ } else if(type==='incomes'){
+  rows = [['ID','Source','Amount','Date','Note']];
+  data.incomes.forEach(i=> rows.push([i.id, i.source, i.amount, i.date, i.note]));
+  filename='Incomes';
+ } else {
+  rows = [['ID','Name','Type','Amount','Date','Status','Note']];
+  data.loans.forEach(l=> rows.push([l.id, l.name, l.type, l.amount, l.date, l.status, l.note]));
+  filename='Loans';
+ }
+ if(typeof XLSX!=='undefined'){
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  XLSX.utils.book_append_sheet(wb, ws, filename);
+  XLSX.writeFile(wb, filename+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
+ } else {
+  let csv = rows.map(r=> r.map(c=> `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=filename+'.csv'; a.click();
+  URL.revokeObjectURL(url);
+ }
 }
 
 window.fmt=(n)=>'Rs '+Number(n).toLocaleString('en-PK');
