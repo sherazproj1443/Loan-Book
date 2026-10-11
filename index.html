@@ -129,6 +129,9 @@ html,body{overflow-x:hidden;width:100%}body{background:var(--bg);color:var(--tex
 <option value="household">Household</option>
 <option value="grocery">Grocery Shopping</option>
 <option value="clothing">Clothing Shopping</option>
+<option value="cigarette">Cigarette</option>
+<option value="canteen_duty">Canteen - Duty</option>
+<option value="canteen_barrack">Canteen - Barrack</option>
 <option value="loan_return">Loan Return (Dena)</option>
 <option value="credit_card">Credit Card Repayment</option>
 <option value="travel">Travel</option>
@@ -221,7 +224,7 @@ window.renderDashboard=()=>{
  const catMap={};
  data.expenses.forEach(e=>{catMap[e.category]=(catMap[e.category]||0)+ +e.amount;});
  const breakdownEl=document.getElementById('expenseBreakdown');
- const catNames={household:'Household', grocery:'Grocery', clothing:'Clothing', loan_return:'Loan Return', credit_card:'Credit Card', travel:'Travel', committee:'Committee/Daisy', utilities:'Bills', other:'Other'};
+ const catNames={household:'Household', grocery:'Grocery', clothing:'Clothing', cigarette:'Cigarette', canteen_duty:'Canteen - Duty', canteen_barrack:'Canteen - Barrack', loan_return:'Loan Return', credit_card:'Credit Card', travel:'Travel', committee:'Committee/Daisy', utilities:'Bills', other:'Other'};
  breakdownEl.innerHTML = Object.entries(catMap).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px"><span>${catNames[k]||k}</span><b>${fmt(v)}</b></div>`).join('') || '<div style="color:var(--muted);font-size:11px">Koi expense nahi</div>';
 
  // recent

@@ -22,73 +22,203 @@
 }
 </style><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="manifest" href="./manifest.json"><meta name="theme-color" content="#0f1210">
-<title>Profiles v2</title>
+<title>Profiles - Aggregated + Repayments</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f1210;--card:#171c19;--card2:#1e2521;--border:#242e27;--text:#e8efe9;--muted:#8da090;--green:#1ed760;--green-bg:rgba(30,215,96,.12);--red:#ff4d4d;--red-bg:rgba(255,77,77,.12);--yellow:#ffb020;--blue:#4da3ff;--blue-bg:rgba(77,163,255,.12)}
+:root{--bg:#0f1210;--card:#171c19;--card2:#1e2521;--border:#242e27;--text:#e8efe9;--muted:#8da090;--green:#1ed760;--red:#ff4d4d;--yellow:#ffb020;--blue:#4da3ff}
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
-html,body{overflow-x:hidden;width:100%}body{background:var(--bg);color:var(--text);min-height:100vh}
-.container{width:100%;max-width:390px;margin:0 auto;padding:14px 12px 110px}
-.topbar{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:14px}
-.logo{font-weight:800;font-size:20px;text-align:center;width:100%}.logo span{color:var(--green)}
-.nav{width:100%;display:flex;gap:4px;background:var(--card);padding:4px;border-radius:999px;border:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
-.nav::-webkit-scrollbar{display:none}
-.nav a{flex:1;white-space:nowrap;text-align:center;padding:8px 6px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:700;font-size:11px}
-.nav a.active{background:var(--text);color:#000}
+body{background:var(--bg);color:var(--text)} .container{max-width:390px;margin:0 auto;padding:14px 12px 110px}
+.topbar{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:14px} .logo{font-weight:800;font-size:20px} .logo span{color:var(--green)}
+.nav{width:100%;display:flex;gap:4px;background:var(--card);padding:4px;border-radius:999px;border:1px solid var(--border);overflow-x:auto;scrollbar-width:none} .nav::-webkit-scrollbar{display:none}
+.nav a{flex:1;white-space:nowrap;text-align:center;padding:8px 6px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:700;font-size:11px} .nav a.active{background:var(--text);color:#000}
 .status-bar{display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:8px 12px;margin-bottom:12px;font-size:11px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px}
-.card.debit{border-left:4px solid var(--red)}.card.credit{border-left:4px solid var(--green)}.card.balance{border-left:4px solid var(--yellow)}.card.blue{border-left:4px solid var(--blue)}
-.label{font-size:10px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:4px}
-.value{font-size:22px;font-weight:800;word-break:break-all}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.small{font-size:11px;color:var(--muted);margin-top:4px}
-.btn{border:none;cursor:pointer;font-weight:700;border-radius:12px;padding:11px 10px;font-size:11px;display:flex;justify-content:center;align-items:center;flex:1}
-.btn-primary{background:var(--text);color:#000}.btn-debit{background:var(--red);color:#fff}.btn-credit{background:var(--green);color:#000}.btn-blue{background:var(--blue);color:#fff}.btn-outline{background:var(--card);color:var(--text);border:1px solid var(--border)}
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;place-items:center;z-index:50;padding:12px}
-.modal-bg.open{display:grid}.modal{width:100%;max-width:360px;background:#1a201c;border:1px solid #2a352e;border-radius:18px;padding:16px;max-height:90vh;overflow:auto}
-.field{margin-bottom:10px}.field label{font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:4px}
-.field input,.field select,.field textarea{width:100%;background:#121512;border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:13px;outline:none}
-.chip-row{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;scrollbar-width:none}.chip-row::-webkit-scrollbar{display:none}
-.chip{white-space:nowrap;padding:7px 12px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:11px;font-weight:700;flex-shrink:0;cursor:pointer}
-.chip.active{background:var(--text);color:#000}
-.row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:12px;margin-bottom:8px}
-.badge{font-size:9px;padding:3px 7px;border-radius:6px;font-weight:800}
-.badge.credit{background:rgba(30,215,96,.15);color:var(--green)}.badge.debit{background:rgba(255,77,77,.15);color:var(--red)}.badge.expense{background:rgba(255,176,32,.15);color:var(--yellow)}.badge.income{background:rgba(77,163,255,.15);color:var(--blue)}
-.actions{display:flex;gap:6px;margin-top:8px}
-.btn-sm{border:1px solid var(--border);background:var(--card2);color:var(--text);padding:5px 9px;border-radius:8px;font-size:10px;cursor:pointer}
-.setup-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px}
-.setup-card input{width:100%;background:#121512;border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:11px;margin-top:6px}
-.type-switch{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:#121512;padding:4px;border-radius:10px;margin-bottom:12px}
-.type-switch button{padding:8px;border-radius:8px;background:transparent;color:var(--muted);font-weight:700;border:1px solid transparent;font-size:11px}
-.type-switch button.active{background:var(--text);color:#000}
-</style></head>
-<body>
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;cursor:pointer;transition:0.15s} .card:hover{border-color:#3a4a3e}
+.card.debit{border-left:4px solid var(--red)} .card.credit{border-left:4px solid var(--green)} .card.neutral{border-left:4px solid var(--yellow)}
+.badge{font-size:9px;padding:3px 7px;border-radius:6px;font-weight:800} .badge.credit{background:rgba(30,215,96,.15);color:var(--green)} .badge.debit{background:rgba(255,77,77,.15);color:var(--red)} .badge.pending{background:rgba(255,176,32,.15);color:var(--yellow)} .badge.paid{background:rgba(141,160,144,.15);color:var(--muted)} .badge.repay{background:rgba(77,163,255,.18);color:var(--blue)}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;place-items:center;z-index:50;padding:12px} .modal-bg.open{display:grid}
+.modal{width:100%;max-width:360px;background:#1a201c;border:1px solid #2a352e;border-radius:18px;padding:16px;max-height:85vh;overflow:auto}
+.row{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.btn{border:none;cursor:pointer;font-weight:700;border-radius:12px;padding:10px;font-size:11px} .btn-outline{background:var(--card);color:var(--text);border:1px solid var(--border);width:100%}
+</style></head><body>
 <div class="container">
 <div class="topbar"><div class="logo">Loan<span>Book</span> v2</div>
 <div class="nav"><a href="index.html">Dashboard</a><a href="transactions.html">Loans</a><a href="incomes.html">Income</a><a href="expenses.html">Expenses</a><a href="profiles.html" class="active">Profiles</a></div></div>
-<input id="search" placeholder="Search profiles..." style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px;color:var(--text);margin-bottom:12px">
+<div class="status-bar"><span id="statusText">Loading...</span><span id="countText" style="color:var(--muted)"></span></div>
+<input id="search" placeholder="Search name..." style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px;color:var(--text);margin-bottom:12px">
 <div id="grid"></div>
 </div>
+
+<div class="modal-bg" id="modalBg"><div class="modal">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h2 id="modalName" style="font-size:16px">Name</h2><span id="modalNet" style="font-weight:800"></span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">
+<div style="background:var(--card2);padding:8px;border-radius:10px;text-align:center"><div style="font-size:9px;color:var(--muted)">Total Diya</div><b id="modalDiya" style="color:var(--green);font-size:12px"></b></div>
+<div style="background:var(--card2);padding:8px;border-radius:10px;text-align:center"><div style="font-size:9px;color:var(--muted)">Total Liya</div><b id="modalLiya" style="color:var(--red);font-size:12px"></b></div>
+<div style="background:var(--card2);padding:8px;border-radius:10px;text-align:center"><div style="font-size:9px;color:var(--muted)">Repaid (Exp)</div><b id="modalRepaid" style="color:var(--blue);font-size:12px"></b></div>
+</div>
+<div style="font-size:10px;color:var(--muted);margin-bottom:6px">All transactions (Loans + Loan Repayment expenses matching name)</div>
+<div id="modalList"></div>
+<button class="btn btn-outline" style="margin-top:12px" onclick="closeModal()">Close</button>
+</div></div>
+
 <script type="module">
 import { JSONBIN_CONFIG } from './jsonbin-config.js';
 let CONFIG=JSONBIN_CONFIG; const s=localStorage.getItem('jsonbin_config'); if(s){try{const j=JSON.parse(s); if(j.BIN_ID!='YOUR_BIN_ID') CONFIG=j;}catch(e){}}
 let data={loans:[], incomes:[], expenses:[]};
-async function load(){const res=await fetch(CONFIG.API_URL+'/'+CONFIG.BIN_ID+'/latest',{headers:{'X-Master-Key':CONFIG.API_KEY}}); const j=await res.json(); const rec=j.record; data.loans=rec.loans||[]; render();}
+
+async function load(){
+ try{
+  const res=await fetch(CONFIG.API_URL+'/'+CONFIG.BIN_ID+'/latest',{headers:{'X-Master-Key':CONFIG.API_KEY}});
+  const j=await res.json(); const rec=j.record;
+  data.loans=rec.loans||[]; data.incomes=rec.incomes||[]; data.expenses=rec.expenses||[];
+  if(Array.isArray(rec)) data.loans=rec;
+  document.getElementById('statusText').textContent='Online';
+  render();
+ }catch(e){
+  const local=localStorage.getItem('loanbook_v2_full');
+  if(local){ try{ data=JSON.parse(local); }catch{} }
+  document.getElementById('statusText').textContent='Offline • Local';
+  render();
+ }
+}
 window.fmt=(n)=>'Rs '+Number(n).toLocaleString('en-PK');
+
 function getProfiles(){
  const map={};
- data.loans.filter(t=>t.status!=='paid').forEach(t=>{
-  if(!map[t.name]) map[t.name]={name:t.name,totalCredit:0,totalDebit:0,count:0};
-  if(t.type==='credit') map[t.name].totalCredit+=+t.amount; else map[t.name].totalDebit+=+t.amount; map[t.name].count++;
+ // Step 1: Loans -> profiles
+ data.loans.forEach(t=>{
+  const key = t.name.trim().toLowerCase();
+  if(!key) return;
+  if(!map[key]){
+   map[key]={
+    key,
+    displayName: t.name.trim(),
+    totalCredit:0,
+    totalDebit:0,
+    totalCreditAll:0,
+    totalDebitAll:0,
+    count:0,
+    countPending:0,
+    entries: [],
+    repaymentEntries: [],
+    totalRepaid:0
+   };
+  }
+  map[key].entries.push({...t, _type:'loan'});
+  map[key].count++;
+  map[key].totalCreditAll += t.type==='credit' ? +t.amount : 0;
+  map[key].totalDebitAll += t.type==='debit' ? +t.amount : 0;
+  if(t.status!=='paid'){
+   map[key].countPending++;
+   if(t.type==='credit') map[key].totalCredit+=+t.amount;
+   else map[key].totalDebit+=+t.amount;
+  }
  });
- return Object.values(map).map(p=>{p.net=p.totalCredit-p.totalDebit; return p;}).sort((a,b)=>Math.abs(b.net)-Math.abs(a.net));
+
+ // Step 2: Expenses -> match repayment
+ const repaymentCats = ['loan_return','credit_card','loan_repayment'];
+ data.expenses.forEach(exp=>{
+  const cat = (exp.category||'').toLowerCase();
+  const isRepayCat = repaymentCats.includes(cat) || cat.includes('loan') || cat.includes('return') || cat.includes('repay');
+  if(!isRepayCat) return;
+  const note = (exp.note||'').toLowerCase();
+  if(!note) return;
+  // match against all profile keys
+  Object.values(map).forEach(profile=>{
+   const nameKey = profile.key; // lower
+   // match if note contains name or name contains note token? Simple contains
+   // also handle "Izhar's" -> should match "izhar"
+   if(note.includes(nameKey) || note.includes(profile.displayName.toLowerCase())){
+    profile.repaymentEntries.push({...exp, _type:'repayment'});
+    profile.totalRepaid += +exp.amount;
+   }
+  });
+ });
+
+ // If expense repayment for name that has no loan yet, still create profile from expense alone? Let's create
+ data.expenses.forEach(exp=>{
+  const cat = (exp.category||'').toLowerCase();
+  const isRepayCat = repaymentCats.includes(cat) || cat.includes('loan') || cat.includes('return');
+  if(!isRepayCat) return;
+  const note = (exp.note||'').trim();
+  if(!note) return;
+  // Try to extract name from note like "Izhar's Loan repayment" -> take first word
+  // But we already matched above. For unmatched repayments, we skip creation to avoid clutter
+ });
+
+ return Object.values(map).map(p=>{
+  p.net = p.totalCredit - p.totalDebit;
+  // Net after repayment? Show adjusted: if you gave loan (credit) and got repayment, net reduces
+  // For simplicity: adjustedNet = net - totalRepaid if net>0 (they owed you) else net + totalRepaid if you owed
+  // We'll show both but main card shows original net, modal shows adjusted
+  if(p.net>0){
+   p.adjustedNet = p.net - p.totalRepaid;
+  } else if(p.net<0){
+   p.adjustedNet = p.net + p.totalRepaid; // because you repaid part of what you owed
+  } else {
+   p.adjustedNet = p.net;
+  }
+  return p;
+ }).sort((a,b)=>Math.abs(b.net)-Math.abs(a.net) || b.count-a.count);
 }
+
 window.render=()=>{
- const q=document.getElementById('search').value.toLowerCase();
- let ps=getProfiles(); if(q) ps=ps.filter(p=>p.name.toLowerCase().includes(q));
- document.getElementById('grid').innerHTML=ps.map(p=>`<div class="card ${p.net>=0?'credit':'debit'}"><b>${p.name}</b><br><small>${p.count} tx</small><div style="display:flex;justify-content:space-between;margin-top:8px"><span style="color:var(--green)">Diya ${fmt(p.totalCredit)}</span><span style="color:var(--red)">Liya ${fmt(p.totalDebit)}</span></div><b style="font-size:18px">${p.net>=0?'Lena Hai ':'Dena Hai '}${fmt(Math.abs(p.net))}</b></div>`).join('') || '<div style="text-align:center;color:var(--muted);padding:20px">No profiles</div>';
+ const q=document.getElementById('search').value.toLowerCase().trim();
+ let ps=getProfiles();
+ if(q) ps=ps.filter(p=>p.key.includes(q));
+ document.getElementById('countText').textContent=ps.length+' profiles';
+ document.getElementById('grid').innerHTML=ps.map(p=>{
+  const netLabel = p.net>0 ? 'Lena Hai' : p.net<0 ? 'Dena Hai' : 'Barabar';
+  const cardClass = p.net>0 ? 'credit' : p.net<0 ? 'debit' : 'neutral';
+  const repayInfo = p.totalRepaid>0 ? `<div style="font-size:10px;color:var(--blue);margin-top:4px">↳ Repaid via Expenses: ${fmt(p.totalRepaid)} (${p.repaymentEntries.length}) • Bacha: ${fmt(Math.abs(p.adjustedNet))}</div>` : '';
+  return `<div class="card ${cardClass}" onclick="openProfile('${p.key.replace(/'/g, "\'")}')">
+   <div style="display:flex;justify-content:space-between;align-items:center">
+    <b style="font-size:14px">${p.displayName}</b>
+    <span style="font-size:10px;color:var(--muted)">${p.count} loans • ${p.repaymentEntries.length} repayments</span>
+   </div>
+   <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px">
+    <span style="color:var(--green)">Diya: ${fmt(p.totalCredit)}</span>
+    <span style="color:var(--red)">Liya: ${fmt(p.totalDebit)}</span>
+   </div>
+   <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center">
+    <b style="font-size:14px">${netLabel}: ${fmt(Math.abs(p.net))}</b>
+    <span style="font-size:10px;color:var(--muted)">Details →</span>
+   </div>
+   ${repayInfo}
+  </div>`;
+ }).join('') || '<div style="text-align:center;color:var(--muted);padding:20px">No loan profiles yet</div>';
 }
+
+window.openProfile=(key)=>{
+ const map = getProfiles().find(p=>p.key===key);
+ if(!map) return;
+ document.getElementById('modalName').textContent=map.displayName;
+ document.getElementById('modalDiya').textContent=fmt(map.totalCreditAll);
+ document.getElementById('modalLiya').textContent=fmt(map.totalDebitAll);
+ document.getElementById('modalRepaid').textContent=fmt(map.totalRepaid);
+ const net = map.adjustedNet;
+ const netLabel = map.net>0 ? 'Lena' : map.net<0 ? 'Dena' : 'Barabar';
+ document.getElementById('modalNet').textContent=netLabel+': '+fmt(Math.abs(net)) + (map.totalRepaid>0 ? ' (after repay)' : '');
+ document.getElementById('modalNet').style.color= net>0 ? 'var(--green)' : net<0 ? 'var(--red)' : 'var(--yellow)';
+ const all = [...map.entries, ...map.repaymentEntries].sort((a,b)=> new Date(b.date)-new Date(a.date));
+ document.getElementById('modalList').innerHTML=all.map(r=>{
+  if(r._type==='loan'){
+   return `<div class="row">
+    <div style="display:flex;justify-content:space-between"><b style="font-size:12px">${r.type==='credit'?'Diya':'Liya'} • ${fmt(r.amount)}</b><span class="badge ${r.type}">${r.type.toUpperCase()}</span></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px">${r.date} • <span class="badge ${r.status}">${r.status}</span> • ${r.note||'No note'}</div>
+   </div>`;
+  } else {
+   return `<div class="row" style="border-color:rgba(77,163,255,.3)">
+    <div style="display:flex;justify-content:space-between"><b style="font-size:12px">Repayment • ${fmt(r.amount)}</b><span class="badge repay">${r.category.toUpperCase()}</span></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px">${r.date} • ${r.note||''} • Matched via note</div>
+   </div>`;
+  }
+ }).join('') || '<div style="color:var(--muted);font-size:11px">No transactions</div>';
+ document.getElementById('modalBg').classList.add('open');
+}
+
+window.closeModal=()=>document.getElementById('modalBg').classList.remove('open');
 document.getElementById('search').addEventListener('input',render);
+document.getElementById('modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg') closeModal();});
 load();
 </script>
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
