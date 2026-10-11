@@ -102,37 +102,45 @@ function getProfilesForSettle(){
   const key = (t.name||'').trim().toLowerCase();
   if(!key) return;
   if(!map[key]){
-   map[key]={key, totalCredit:0, totalDebit:0, countPending:0, entries:[]};
+   map[key]={key, totalCredit:0, totalDebit:0, countPending:0, entries:[], paidLoans:[]};
   }
   if(t.status!=='paid'){
    map[key].countPending++;
    if(t.type==='credit') map[key].totalCredit+=+t.amount;
    else map[key].totalDebit+=+t.amount;
+  } else {
+   map[key].paidLoans.push(t);
   }
   map[key].entries.push(t);
  });
  const repaymentCats=['loan_return','credit_card','loan_repayment'];
  Object.values(map).forEach(profile=>{
-  let totalRepaid=0;
+  let allRepayments=[];
   data.expenses.forEach(exp=>{
    const cat=(exp.category||'').toLowerCase();
    const isRepay = repaymentCats.includes(cat) || cat.includes('loan') || cat.includes('return');
    if(!isRepay) return;
    const note=(exp.note||'').toLowerCase();
    if(note.includes(profile.key)){
-    totalRepaid+=+exp.amount;
+    allRepayments.push({amount:+exp.amount, _matched:false});
    }
   });
-  // Income repayments (e.g., Zohaib loan repayment received)
   data.incomes.forEach(inc=>{
    const src=(inc.source||'').toLowerCase();
    const isLoanRepay = src.includes('loan') && (src.includes('repay') || src.includes('return'));
    if(!isLoanRepay) return;
    const note=(inc.note||'').toLowerCase();
    if(note.includes(profile.key)){
-    totalRepaid+=+inc.amount;
+    allRepayments.push({amount:+inc.amount, _matched:false});
    }
   });
+  // match repayments to paid loans to exclude
+  profile.paidLoans.forEach(pl=>{
+   const idx = allRepayments.findIndex(r=> !r._matched && Math.abs(r.amount - +pl.amount) < 0.01);
+   if(idx!==-1) allRepayments[idx]._matched = true;
+  });
+  const unmatched = allRepayments.filter(r=>!r._matched);
+  const totalRepaid = unmatched.reduce((s,x)=>s+ x.amount,0);
   profile.totalRepaid=totalRepaid;
   profile.net = profile.totalCredit - profile.totalDebit;
   if(profile.net>0) profile.adjustedNet = profile.net - totalRepaid;
@@ -141,6 +149,7 @@ function getProfilesForSettle(){
  });
  return Object.values(map);
 }
+
 
 async function autoSettleIfNeeded(){
  const profiles = getProfilesForSettle();

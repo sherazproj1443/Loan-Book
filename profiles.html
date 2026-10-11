@@ -223,7 +223,7 @@ window.render=()=>{
  document.getElementById('grid').innerHTML=ps.map(p=>{
   const netLabel = p.net>0 ? 'Lena Hai' : p.net<0 ? 'Dena Hai' : 'Barabar';
   const cardClass = p.net>0 ? 'credit' : p.net<0 ? 'debit' : 'neutral';
-  const repayInfo = p.totalRepaid>0 ? `<div style="font-size:10px;color:var(--blue);margin-top:4px">↳ Repaid via Exp/Inc: ${fmt(p.totalRepaid)} (${p.repaymentEntries.length}) • Bacha: ${fmt(Math.abs(p.adjustedNet))}</div>` : '';
+  const repayInfo = p.totalRepaidAll>0 ? `<div style="font-size:10px;color:var(--blue);margin-top:4px">↳ Repaid: ${fmt(p.totalRepaidAll)} total, ${fmt(p.totalRepaid)} pending effect • Bacha: ${fmt(Math.abs(p.adjustedNet))}</div>` : '';
   return `<div class="card ${cardClass}" onclick="openProfile('${p.key.replace(/'/g, "\'")}')">
    <div style="display:flex;justify-content:space-between;align-items:center">
     <b style="font-size:14px">${p.displayName}</b>
@@ -254,7 +254,7 @@ window.openProfile=(key)=>{
  const netLabel = map.net>0 ? 'Lena' : map.net<0 ? 'Dena' : 'Barabar';
  document.getElementById('modalNet').textContent=netLabel+': '+fmt(Math.abs(net)) + (map.totalRepaid>0 ? ' (after repay)' : '');
  document.getElementById('modalNet').style.color= net>0 ? 'var(--green)' : net<0 ? 'var(--red)' : 'var(--yellow)';
- const all = [...map.entries, ...map.repaymentEntries].sort((a,b)=> new Date(b.date)-new Date(a.date));
+ const all = [...map.entries, ...map.repaymentEntriesForModal].sort((a,b)=> new Date(b.date)-new Date(a.date));
  document.getElementById('modalList').innerHTML=all.map(r=>{
   if(r._type==='loan'){
    return `<div class="row">
