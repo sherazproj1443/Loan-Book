@@ -65,6 +65,7 @@ body{background:var(--bg);color:var(--text)} .container{max-width:390px;margin:0
 import { JSONBIN_CONFIG } from './jsonbin-config.js';
 let CONFIG=JSONBIN_CONFIG; const s=localStorage.getItem('jsonbin_config'); if(s){try{const j=JSON.parse(s); if(j.BIN_ID!='YOUR_BIN_ID') CONFIG=j;}catch(e){}}
 let data={loans:[], incomes:[], expenses:[]};
+let isAutoSettling=false;
 
 async function load(){
  try{
@@ -86,12 +87,13 @@ window.fmt=(n)=>'Rs '+Number(n).toLocaleString('en-PK');
 function getProfiles(){
  const map={};
  data.loans.forEach(t=>{
-  const key = t.name.trim().toLowerCase();
-  if(!key) return;
+  const rawName = (t.name||'').trim();
+  if(!rawName) return;
+  const key = rawName.toLowerCase();
   if(!map[key]){
    map[key]={
     key,
-    displayName: t.name.trim(),
+    displayName: rawName,
     totalCredit:0,
     totalDebit:0,
     totalCreditAll:0,
@@ -99,8 +101,9 @@ function getProfiles(){
     count:0,
     countPending:0,
     entries: [],
-    repaymentEntries: [],
-    totalRepaid:0
+    repaymentEntriesAll: [],
+    totalRepaidAll:0,
+    paidLoans:[]
    };
   }
   map[key].entries.push({...t, _type:'loan'});
@@ -111,38 +114,49 @@ function getProfiles(){
    map[key].countPending++;
    if(t.type==='credit') map[key].totalCredit+=+t.amount;
    else map[key].totalDebit+=+t.amount;
+  } else {
+   map[key].paidLoans.push(t);
   }
  });
 
  const repaymentCats = ['loan_return','credit_card','loan_repayment'];
- // Expense repayments (Loan Return)
- data.expenses.forEach(exp=>{
-  const cat = (exp.category||'').toLowerCase();
-  const isRepayCat = repaymentCats.includes(cat) || cat.includes('loan') || cat.includes('return') || cat.includes('repay');
-  if(!isRepayCat) return;
-  const note = (exp.note||'').toLowerCase();
-  if(!note) return;
-  Object.values(map).forEach(profile=>{
+ Object.values(map).forEach(profile=>{
+  let all=[];
+  data.expenses.forEach(exp=>{
+   const cat = (exp.category||'').toLowerCase();
+   const isRepayCat = repaymentCats.includes(cat) || cat.includes('loan') || cat.includes('return') || cat.includes('repay');
+   if(!isRepayCat) return;
+   const note = (exp.note||'').toLowerCase();
+   if(!note) return;
    if(note.includes(profile.key) || note.includes(profile.displayName.toLowerCase())){
-    profile.repaymentEntries.push({...exp, _type:'repayment', _subType:'expense', category: exp.category});
-    profile.totalRepaid += +exp.amount;
+    all.push({...exp, _type:'repayment', _subType:'expense', category:exp.category, _matched:false});
    }
   });
+  data.incomes.forEach(inc=>{
+   const src = (inc.source||'').toLowerCase();
+   const isLoanRepay = src.includes('loan') && (src.includes('repay') || src.includes('return'));
+   if(!isLoanRepay) return;
+   const note = (inc.note||'').toLowerCase();
+   if(!note) return;
+   if(note.includes(profile.key) || note.includes(profile.displayName.toLowerCase())){
+    all.push({...inc, _type:'repayment', _subType:'income', category:inc.source, source:inc.source, _matched:false});
+   }
+  });
+  profile.repaymentEntriesAll = all;
+  profile.totalRepaidAll = all.reduce((s,x)=>s+ +x.amount,0);
  });
 
- // Income repayments (e.g., Zohaib loan repayment received)
- data.incomes.forEach(inc=>{
-  const src = (inc.source||'').toLowerCase();
-  const isLoanRepay = src.includes('loan') && (src.includes('repay') || src.includes('return'));
-  if(!isLoanRepay) return;
-  const note = (inc.note||'').toLowerCase();
-  if(!note) return;
-  Object.values(map).forEach(profile=>{
-   if(note.includes(profile.key) || note.includes(profile.displayName.toLowerCase())){
-    profile.repaymentEntries.push({...inc, _type:'repayment', _subType:'income', category: inc.source, source: inc.source});
-    profile.totalRepaid += +inc.amount;
-   }
+ // Match repayments to PAID loans to exclude from pending effect (fixes Jazcash 500 bug)
+ Object.values(map).forEach(profile=>{
+  let remaining = profile.repaymentEntriesAll.map(r=>({...r}));
+  profile.paidLoans.forEach(pl=>{
+   const idx = remaining.findIndex(r=> !r._matched && Math.abs(+r.amount - +pl.amount) < 0.01);
+   if(idx!==-1) remaining[idx]._matched = true;
   });
+  const unmatched = remaining.filter(r=>!r._matched);
+  profile.repaymentEntries = unmatched;
+  profile.repaymentEntriesForModal = profile.repaymentEntriesAll;
+  profile.totalRepaid = unmatched.reduce((s,x)=>s+ +x.amount,0);
  });
 
  return Object.values(map).map(p=>{
@@ -192,9 +206,11 @@ window.autoSettleZeroProfiles=async()=>{
 }
 
 async function checkAndAutoSettle(){
+ if(isAutoSettling) return;
  const profiles = getProfiles();
  const zeroProfiles = profiles.filter(p=>p.adjustedNet===0 && p.countPending>0);
  if(zeroProfiles.length>0){
+  isAutoSettling=true;
   document.getElementById('settleInfo').textContent=zeroProfiles.length+' zero balance auto settling...';
   let settledCount=0;
   zeroProfiles.forEach(p=>{
@@ -210,6 +226,7 @@ async function checkAndAutoSettle(){
    render();
    document.getElementById('settleInfo').textContent=settledCount+' loans auto marked as Paid (net zero) • '+zeroProfiles.map(z=>z.displayName).join(', ');
   }
+  isAutoSettling=false;
  } else {
   document.getElementById('settleInfo').textContent='';
  }
@@ -224,35 +241,42 @@ window.render=()=>{
   const netLabel = p.net>0 ? 'Lena Hai' : p.net<0 ? 'Dena Hai' : 'Barabar';
   const cardClass = p.net>0 ? 'credit' : p.net<0 ? 'debit' : 'neutral';
   const repayInfo = p.totalRepaidAll>0 ? `<div style="font-size:10px;color:var(--blue);margin-top:4px">↳ Repaid: ${fmt(p.totalRepaidAll)} total, ${fmt(p.totalRepaid)} pending effect • Bacha: ${fmt(Math.abs(p.adjustedNet))}</div>` : '';
-  return `<div class="card ${cardClass}" onclick="openProfile('${p.key.replace(/'/g, "\'")}')">
+  const safeKey = encodeURIComponent(p.key);
+  return `<div class="card ${cardClass}" data-key="${safeKey}" onclick="openProfile(decodeURIComponent(this.dataset.key))">
    <div style="display:flex;justify-content:space-between;align-items:center">
     <b style="font-size:14px">${p.displayName}</b>
-    <span style="font-size:10px;color:var(--muted)">${p.count} loans • ${p.repaymentEntries.length} repayments</span>
+    <span style="font-size:10px;color:var(--muted)">${p.count} loans • ${p.repaymentEntriesAll.length} repayments</span>
    </div>
    <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px">
     <span style="color:var(--green)">Diya: ${fmt(p.totalCredit)}</span>
     <span style="color:var(--red)">Liya: ${fmt(p.totalDebit)}</span>
    </div>
    <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center">
-    <b style="font-size:14px">${netLabel}: ${fmt(Math.abs(p.net))}</b>
+    <b style="font-size:14px">${netLabel}: ${fmt(Math.abs(p.adjustedNet))}</b>
     <span style="font-size:10px;color:var(--muted)">Details →</span>
    </div>
    ${repayInfo}
   </div>`;
  }).join('') || '<div style="text-align:center;color:var(--muted);padding:20px">No loan profiles yet</div>';
- checkAndAutoSettle();
+ if(!isAutoSettling){
+  setTimeout(checkAndAutoSettle, 100);
+ }
 }
 
 window.openProfile=(key)=>{
- const map = getProfiles().find(p=>p.key===key);
- if(!map) return;
+ const profiles = getProfiles();
+ const map = profiles.find(p=>p.key===key);
+ if(!map){
+  console.log('profile not found for key', key);
+  return;
+ }
  document.getElementById('modalName').textContent=map.displayName;
  document.getElementById('modalDiya').textContent=fmt(map.totalCreditAll);
  document.getElementById('modalLiya').textContent=fmt(map.totalDebitAll);
- document.getElementById('modalRepaid').textContent=fmt(map.totalRepaid);
+ document.getElementById('modalRepaid').textContent=fmt(map.totalRepaidAll);
  const net = map.adjustedNet;
  const netLabel = map.net>0 ? 'Lena' : map.net<0 ? 'Dena' : 'Barabar';
- document.getElementById('modalNet').textContent=netLabel+': '+fmt(Math.abs(net)) + (map.totalRepaid>0 ? ' (after repay)' : '');
+ document.getElementById('modalNet').textContent=netLabel+': '+fmt(Math.abs(net)) + (map.totalRepaidAll>0 ? ' (after repay)' : '');
  document.getElementById('modalNet').style.color= net>0 ? 'var(--green)' : net<0 ? 'var(--red)' : 'var(--yellow)';
  const all = [...map.entries, ...map.repaymentEntriesForModal].sort((a,b)=> new Date(b.date)-new Date(a.date));
  document.getElementById('modalList').innerHTML=all.map(r=>{
