@@ -29,8 +29,11 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
 body{background:var(--bg);color:var(--text)} .container{max-width:390px;margin:0 auto;padding:14px 12px 110px}
 .topbar{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:14px} .logo{font-weight:800;font-size:20px} .logo span{color:var(--green)}
-.nav{width:100%;display:flex;gap:4px;background:var(--card);padding:4px;border-radius:999px;border:1px solid var(--border);overflow-x:auto;scrollbar-width:none} .nav::-webkit-scrollbar{display:none}
-.nav a{flex:1;white-space:nowrap;text-align:center;padding:8px 6px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:700;font-size:11px} .nav a.active{background:var(--text);color:#000}
+.nav{width:100%;display:flex;flex-direction:column;gap:5px;background:var(--card);padding:6px;border-radius:16px;border:1px solid var(--border)}
+.nav-row{width:100%;display:flex;gap:4px}
+.nav-row a{flex:1;white-space:nowrap;text-align:center;padding:9px 6px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:700;font-size:11px;min-width:0;display:flex;justify-content:center;align-items:center}
+.nav a.active{background:var(--text);color:#000}
+.nav-row a.active{background:var(--text);color:#000}
 .status-bar{display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:8px 12px;margin-bottom:12px;font-size:11px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;cursor:pointer;transition:0.15s} .card:hover{border-color:#3a4a3e}
 .card.debit{border-left:4px solid var(--red)} .card.credit{border-left:4px solid var(--green)} .card.neutral{border-left:4px solid var(--yellow)}
@@ -41,8 +44,20 @@ body{background:var(--bg);color:var(--text)} .container{max-width:390px;margin:0
 .btn{border:none;cursor:pointer;font-weight:700;border-radius:12px;padding:10px;font-size:11px} .btn-outline{background:var(--card);color:var(--text);border:1px solid var(--border);width:100%}
 </style></head><body>
 <div class="container">
-<div class="topbar"><div class="logo">Loan<span>Book</span> v2</div>
-<div class="nav"><a href="index.html">Dashboard</a><a href="transactions.html">Loans</a><a href="incomes.html">Income</a><a href="expenses.html">Expenses</a><a href="profiles.html" class="active">Profiles</a></div></div>
+<div class="topbar"><div class="logo">FinTrack<span>Pro</span></div>
+<div class="nav">
+<div class="nav-row">
+<a href="index.html" class="">Dashboard</a>
+<a href="transactions.html" class="">Loans</a>
+<a href="incomes.html" class="">Income</a>
+</div>
+<div class="nav-row">
+<a href="expenses.html" class="">Expenses</a>
+<a href="profiles.html" class="active">Profiles</a>
+<a href="analytics.html" class="">Analytics</a>
+</div>
+</div>
+</div>
 <div class="status-bar"><span id="statusText">Loading...</span><span id="countText" style="color:var(--muted)"></span></div>
 <div style="display:flex;gap:6px;margin-bottom:10px"><button class="btn btn-outline" style="font-size:10px;padding:8px" onclick="autoSettleZeroProfiles()">✨ Auto Settle Zero Balance</button><span id="settleInfo" style="font-size:10px;color:var(--muted);align-self:center"></span></div>
 <input id="search" placeholder="Search name..." style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px;color:var(--text);margin-bottom:12px">
