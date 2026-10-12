@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head><style>
@@ -65,11 +66,13 @@ html,body{overflow-x:hidden;width:100%}body{background:var(--bg);color:var(--tex
 <a href="index.html" class="">Dashboard</a>
 <a href="transactions.html" class="">Loans</a>
 <a href="incomes.html" class="">Income</a>
+<a href="expenses.html" class="">Expenses</a>
 </div>
 <div class="nav-row">
-<a href="expenses.html" class="">Expenses</a>
 <a href="profiles.html" class="">Profiles</a>
 <a href="analytics.html" class="active">Analytics</a>
+<a href="assets.html" class="">Assets</a>
+<a href="todos.html" class="">To-Do</a>
 </div>
 </div>
 </div>
@@ -105,6 +108,17 @@ html,body{overflow-x:hidden;width:100%}body{background:var(--bg);color:var(--tex
 <div class="card">
 <b style="font-size:12px">🏆 Top Categories (This Month)</b>
 <div id="topCats" style="margin-top:8px"></div>
+</div>
+
+
+<div class="card" style="background:linear-gradient(135deg,#1e2521,#171c19);border:1px solid #2a352e">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:12px">💾 Cloud Backup</b><span style="font-size:9px;color:var(--muted)" id="lastBackupText"></span></div>
+<div style="display:flex;gap:6px">
+<button class="btn btn-blue" style="font-size:10px;padding:9px" onclick="backupToDrive()">📤 Backup to Drive</button>
+<button class="btn btn-outline" style="font-size:10px;padding:9px" onclick="restoreBackup()">📥 Restore</button>
+</div>
+<div class="small" style="margin-top:8px">Auto backup every 7 days • Offline changes sync when online</div>
+<input type="file" id="restoreFile" style="display:none" accept=".json" onchange="handleRestore(event)">
 </div>
 
 <div class="card" style="background:linear-gradient(135deg,#171c19,#1e2521);border:1px dashed #2a352e">
@@ -258,7 +272,37 @@ function renderTopCats(filtered){
 window.setCurrentMonth=()=>{
  customRange=null;
  selectedMonth = new Date().toISOString().slice(0,7);
- document.getElementById('breakdownMonth').value=selectedMonth;
+ 
+window.restoreBackup=()=>{ document.getElementById('restoreFile').click(); };
+window.handleRestore=(e)=>{
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=(ev)=>{
+    try{
+      const backup=JSON.parse(ev.target.result);
+      const data=backup.data||backup;
+      if(!data.loans && !data.incomes && !data.expenses){ alert('Invalid backup file'); return; }
+      if(!confirm('Restore backup from '+ (backup.timestamp||'unknown') + '? Current data will be overwritten!')) return;
+      localStorage.setItem('loanbook_v2_full', JSON.stringify(data));
+      if(window.saveData) saveData();
+      alert('Backup restored! Reloading...');
+      location.reload();
+    }catch(err){ alert('Failed to restore: '+err.message); }
+  };
+  reader.readAsText(file);
+};
+// Update last backup text
+setTimeout(()=>{
+  const last=localStorage.getItem('fintrack_last_drive_backup');
+  const el=document.getElementById('lastBackupText');
+  if(el && last){
+    const d=new Date(last);
+    el.textContent='Last: '+d.toLocaleDateString();
+  }
+}, 1000);
+
+document.getElementById('breakdownMonth').value=selectedMonth;
  document.getElementById('customFrom').value=''; document.getElementById('customTo').value='';
  render();
 }
@@ -266,7 +310,37 @@ window.setLastMonth=()=>{
  customRange=null;
  const d=new Date(); d.setMonth(d.getMonth()-1);
  selectedMonth = d.toISOString().slice(0,7);
- document.getElementById('breakdownMonth').value=selectedMonth;
+ 
+window.restoreBackup=()=>{ document.getElementById('restoreFile').click(); };
+window.handleRestore=(e)=>{
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=(ev)=>{
+    try{
+      const backup=JSON.parse(ev.target.result);
+      const data=backup.data||backup;
+      if(!data.loans && !data.incomes && !data.expenses){ alert('Invalid backup file'); return; }
+      if(!confirm('Restore backup from '+ (backup.timestamp||'unknown') + '? Current data will be overwritten!')) return;
+      localStorage.setItem('loanbook_v2_full', JSON.stringify(data));
+      if(window.saveData) saveData();
+      alert('Backup restored! Reloading...');
+      location.reload();
+    }catch(err){ alert('Failed to restore: '+err.message); }
+  };
+  reader.readAsText(file);
+};
+// Update last backup text
+setTimeout(()=>{
+  const last=localStorage.getItem('fintrack_last_drive_backup');
+  const el=document.getElementById('lastBackupText');
+  if(el && last){
+    const d=new Date(last);
+    el.textContent='Last: '+d.toLocaleDateString();
+  }
+}, 1000);
+
+document.getElementById('breakdownMonth').value=selectedMonth;
  document.getElementById('customFrom').value=''; document.getElementById('customTo').value='';
  render();
 }
@@ -350,8 +424,39 @@ window.exportSheet=(type)=>{
  XLSX.writeFile(wb, filename+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
 
+
+window.restoreBackup=()=>{ document.getElementById('restoreFile').click(); };
+window.handleRestore=(e)=>{
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=(ev)=>{
+    try{
+      const backup=JSON.parse(ev.target.result);
+      const data=backup.data||backup;
+      if(!data.loans && !data.incomes && !data.expenses){ alert('Invalid backup file'); return; }
+      if(!confirm('Restore backup from '+ (backup.timestamp||'unknown') + '? Current data will be overwritten!')) return;
+      localStorage.setItem('loanbook_v2_full', JSON.stringify(data));
+      if(window.saveData) saveData();
+      alert('Backup restored! Reloading...');
+      location.reload();
+    }catch(err){ alert('Failed to restore: '+err.message); }
+  };
+  reader.readAsText(file);
+};
+// Update last backup text
+setTimeout(()=>{
+  const last=localStorage.getItem('fintrack_last_drive_backup');
+  const el=document.getElementById('lastBackupText');
+  if(el && last){
+    const d=new Date(last);
+    el.textContent='Last: '+d.toLocaleDateString();
+  }
+}, 1000);
+
 document.getElementById('breakdownMonth').value=selectedMonth;
 loadData();
 </script>
+<script src="./pwa.js"></script>
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
 </html>
