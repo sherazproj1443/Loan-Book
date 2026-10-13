@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#0f1210">
+<title>To-Do Lists - FinTrack Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1210;--card:#171c19;--card2:#1e2521;--border:#242e27;--text:#e8efe9;--muted:#8da090;--green:#1ed760;--red:#ff4d4d;--yellow:#ffb020;--blue:#4da3ff;--orange:#ff8c42;--purple:#a78bfa}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
+body{background:var(--bg);color:var(--text)} .container{max-width:390px;margin:0 auto;padding:14px 12px 110px}
+.topbar{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:14px} .logo{font-weight:800;font-size:20px} .logo span{color:var(--green)}
+.nav{width:100%;display:flex;flex-direction:column;gap:5px;background:var(--card);padding:6px;border-radius:16px;border:1px solid var(--border)}
+.nav-row{width:100%;display:flex;gap:4px}
+.nav-row a{flex:1;white-space:nowrap;text-align:center;padding:9px 6px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:700;font-size:10px;min-width:0;display:flex;justify-content:center;align-items:center}
+.nav a.active{background:var(--text);color:#000}
+.nav-row a.active{background:var(--text);color:#000}
+.status-bar{display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:8px 12px;margin-bottom:12px;font-size:11px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px}
+.card.major{border-left:4px solid var(--red)} .card.minor{border-left:4px solid var(--yellow)} .card.must{border-left:4px solid var(--green)} .card.custom{border-left:4px solid var(--blue)} .card.shopping{border-left:4px solid var(--orange)}
+.label{font-size:9px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:3px}
+.value{font-size:14px;font-weight:800}
+.small{font-size:10px;color:var(--muted);margin-top:3px}
+.btn{border:none;cursor:pointer;font-weight:700;border-radius:12px;padding:10px;font-size:11px;display:flex;justify-content:center;align-items:center;flex:1}
+.btn-primary{background:var(--text);color:#000} .btn-outline{background:var(--card);color:var(--text);border:1px solid var(--border)} .btn-red{background:var(--red);color:#fff} .btn-green{background:var(--green);color:#000} .btn-blue{background:var(--blue);color:#fff}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;place-items:center;z-index:50;padding:12px} .modal-bg.open{display:grid}
+.modal{width:100%;max-width:360px;background:#1a201c;border:1px solid #2a352e;border-radius:18px;padding:16px;max-height:90vh;overflow:auto}
+.field{margin-bottom:10px} .field label{font-size:10px;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;background:#121512;border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:13px;outline:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:12px;margin-bottom:8px}
+.task-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card2);border:1px solid var(--border);border-radius:12px;margin-bottom:6px;transition:all 0.2s}
+.task-item.done{opacity:0.5;background:#121512} .task-item.done .task-text{text-decoration:line-through;color:var(--muted)}
+.check{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.check.done{background:var(--green);border-color:var(--green);color:#000}
+.progress{height:6px;background:#121512;border-radius:3px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;border-radius:3px;transition:width 0.3s}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="topbar"><div class="logo">FinTrack<span>Pro</span></div>
+<div class="nav">
+<div class="nav-row">
+<a href="index.html" class="">Dashboard</a>
+<a href="transactions.html" class="">Loans</a>
+<a href="incomes.html" class="">Income</a>
+<a href="expenses.html" class="">Expenses</a>
+</div>
+<div class="nav-row">
+<a href="profiles.html" class="">Profiles</a>
+<a href="analytics.html" class="">Analytics</a>
+<a href="assets.html" class="">Assets</a>
+<a href="todos.html" class="active">To-Do</a>
+</div>
+</div>
+</div>
+<div class="status-bar"><span id="statusText">Loading...</span><span id="syncText" style="font-size:10px;color:var(--muted)">--</span></div>
+
+<div class="grid2">
+<div class="card" style="border-left:4px solid var(--green)"><div class="label">Total Tasks</div><div class="value" id="totalTasks">0</div><div class="small" id="doneTasks">0 done</div></div>
+<div class="card" style="border-left:4px solid var(--blue)"><div class="label">Lists</div><div class="value" id="totalLists">0</div><div class="small">Active lists</div></div>
+</div>
+
+<div style="display:flex;gap:6px;margin-bottom:12px">
+<button class="btn btn-primary" style="font-size:11px" onclick="openListModal()">+ New List</button>
+<button class="btn btn-outline" style="font-size:11px" onclick="openQuickAdd()">+ Quick Task</button>
+</div>
+
+<!-- Lists Container -->
+<div id="listsContainer"></div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px">
+<button class="btn btn-outline" style="font-size:10px" onclick="exportTodos()">📤 Export</button>
+<button class="btn btn-outline" style="font-size:10px" onclick="clearCompleted()">🧹 Clear Done</button>
+</div>
+</div>
+
+<!-- Add/Edit List Modal -->
+<div class="modal-bg" id="listModalBg"><div class="modal">
+<h3 id="listModalTitle">New List</h3>
+<div class="field"><label>List Name</label><input id="listName" placeholder="e.g., Major Shopping, Must Do"></div>
+<div class="field"><label>Type</label>
+<select id="listType">
+<option value="major">🔴 Major Items (Important/Big)</option>
+<option value="minor">🟡 Minor Items (Small/Low)</option>
+<option value="must">🟢 Must Do Tasks (Urgent)</option>
+<option value="shopping">🟠 Shopping List</option>
+<option value="custom">🔵 Custom List</option>
+</select>
+</div>
+<div class="field"><label>Icon (Emoji)</label><input id="listIcon" placeholder="e.g., 🛒, ✅, ⭐" maxlength="2"></div>
+<div class="field"><label>Description</label><input id="listDesc" placeholder="Optional description"></div>
+<div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-outline" onclick="closeListModal()">Cancel</button><button class="btn btn-primary" onclick="saveList()">Save List</button></div>
+</div></div>
+
+<!-- Add Task Modal -->
+<div class="modal-bg" id="taskModalBg"><div class="modal">
+<h3 id="taskModalTitle">Add Task</h3>
+<div class="field"><label>Select List</label><select id="taskListSelect"></select></div>
+<div class="field"><label>Task / Item</label><input id="taskText" placeholder="e.g., Buy 2kg Chicken, Pay electricity bill"></div>
+<div class="grid2">
+<div class="field"><label>Priority</label><select id="taskPriority"><option value="high">🔴 High</option><option value="medium">🟡 Medium</option><option value="low">🟢 Low</option></select></div>
+<div class="field"><label>Due Date (Optional)</label><input id="taskDue" type="date"></div>
+</div>
+<div class="field"><label>Note</label><input id="taskNote" placeholder="Optional note"></div>
+<div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-outline" onclick="closeTaskModal()">Cancel</button><button class="btn btn-primary" onclick="saveTask()">Add Task</button></div>
+</div></div>
+
+
+<!-- Expense Auto-Add Modal -->
+<div class="modal-bg" id="expensePromptBg"><div class="modal">
+<h3>💸 Add to Expenses?</h3>
+<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px">
+<div style="font-size:11px;color:var(--muted)">Task completed:</div>
+<b id="expenseTaskName" style="font-size:12px"></b>
+</div>
+<div class="field"><label>Amount (Rs)</label><input id="expenseAmount" type="number" placeholder="e.g., 500"></div>
+<div class="field"><label>Category</label>
+<select id="expenseCategory">
+<option value="grocery">Grocery Shopping</option>
+<option value="household">Household</option>
+<option value="clothing">Clothing Shopping</option>
+<option value="canteen_duty">Canteen - Duty</option>
+<option value="canteen_barrack">Canteen - Barrack</option>
+<option value="cigarette">Cigarette</option>
+<option value="loan_return">Loan Return</option>
+<option value="credit_card">Credit Card Repayment</option>
+<option value="travel">Travel Expenses</option>
+<option value="committee">Committee / Daisy</option>
+<option value="utilities">Utilities / Bills</option>
+<option value="other">Other</option>
+</select>
+</div>
+<div class="field"><label>Note</label><input id="expenseNote" placeholder="Auto from To-Do"></div>
+<div style="display:flex;gap:8px;margin-top:12px">
+<button class="btn btn-outline" onclick="closeExpensePrompt()">Skip</button>
+<button class="btn btn-green" onclick="confirmExpenseAdd()">Add to Expenses</button>
+</div>
+<div style="font-size:9px;color:var(--muted);margin-top:8px;text-align:center">Expense will be added with today's date • You can skip if not needed</div>
+</div></div>
+
+<script type="module">
+import { JSONBIN_CONFIG } from './jsonbin-config.js';
+let CONFIG=JSONBIN_CONFIG; const s=localStorage.getItem('jsonbin_config'); if(s){try{const j=JSON.parse(s); if(j.BIN_ID!='YOUR_BIN_ID') CONFIG=j;}catch(e){}}
+let data={loans:[], incomes:[], expenses:[], assets:[], dsp_fund:null, todo_lists:[]};
+let editListId=null; let currentTaskListId=null;
+
+async function load(){
+ try{
+  const res=await fetch(CONFIG.API_URL+'/'+CONFIG.BIN_ID+'/latest',{headers:{'X-Master-Key':CONFIG.API_KEY}});
+  const j=await res.json(); const rec=j.record;
+  data.loans=rec.loans||[]; data.incomes=rec.incomes||[]; data.expenses=rec.expenses||[]; data.assets=rec.assets||[]; data.dsp_fund=rec.dsp_fund||null; data.todo_lists=rec.todo_lists||[];
+  if(Array.isArray(rec)) data.loans=rec;
+  // Init default lists if empty
+  if(!data.todo_lists || data.todo_lists.length===0){
+    data.todo_lists=[
+      {id:1, name:'Major Items List', type:'major', icon:'🔴', desc:'Big/Important shopping', color:'major', items:[{id:101, text:'Example: Fridge / AC', done:false, priority:'high', createdAt:new Date().toISOString()}]},
+      {id:2, name:'Minor Items List', type:'minor', icon:'🟡', desc:'Small items', color:'minor', items:[]},
+      {id:3, name:'Must Do Tasks', type:'must', icon:'✅', desc:'Urgent tasks', color:'must', items:[]},
+    ];
+    await saveData();
+  }
+  document.getElementById('statusText').textContent='Online';
+  render();
+ }catch(e){
+  const local=localStorage.getItem('loanbook_v2_full');
+  if(local){ try{ const parsed=JSON.parse(local); data={...data, ...parsed}; if(!data.todo_lists) data.todo_lists=[]; }catch{} }
+  if(!data.todo_lists || data.todo_lists.length===0){
+    data.todo_lists=[
+      {id:1, name:'Major Items List', type:'major', icon:'🔴', desc:'Big/Important shopping', color:'major', items:[]},
+      {id:2, name:'Minor Items List', type:'minor', icon:'🟡', desc:'Small items', color:'minor', items:[]},
+      {id:3, name:'Must Do Tasks', type:'must', icon:'✅', desc:'Urgent tasks', color:'must', items:[]},
+    ];
+  }
+  document.getElementById('statusText').textContent='Offline • Local';
+  render();
+ }
+}
+
+window.fmt=(n)=>'Rs '+Number(n).toLocaleString('en-PK');
+
+function render(){
+  const lists=data.todo_lists||[];
+  let totalTasks=0; let doneTasks=0;
+  lists.forEach(l=>{ totalTasks+=l.items.length; doneTasks+=l.items.filter(i=>i.done).length; });
+  document.getElementById('totalTasks').textContent=totalTasks;
+  document.getElementById('doneTasks').textContent=`${doneTasks} done • ${totalTasks-doneTasks} pending`;
+  document.getElementById('totalLists').textContent=lists.length;
+
+  document.getElementById('listsContainer').innerHTML=lists.map(list=>{
+    const doneCount=list.items.filter(i=>i.done).length;
+    const total=list.items.length;
+    const pct= total>0 ? Math.round((doneCount/total)*100) : 0;
+    const colorClass=list.color||list.type;
+    const iconMap={major:'🔴', minor:'🟡', must:'✅', shopping:'🛒', custom:'📋'};
+    const icon=list.icon || iconMap[list.type] || '📋';
+    const progressColor = list.type==='major' ? 'var(--red)' : list.type==='minor' ? 'var(--yellow)' : list.type==='must' ? 'var(--green)' : 'var(--blue)';
+    return `<div class="card ${colorClass}">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div style="display:flex;gap:8px;align-items:center"><span style="font-size:20px">${icon}</span><div><b style="font-size:13px">${list.name}</b><br><span style="font-size:10px;color:var(--muted)">${list.desc||''} • ${doneCount}/${total} done</span></div></div>
+        <div style="display:flex;gap:4px"><button class="btn btn-outline" style="padding:4px 8px;font-size:9px;flex:0" onclick="openTaskModalFor(${list.id})">+ Add</button><button class="btn btn-outline" style="padding:4px 6px;font-size:9px;flex:0" onclick="editList(${list.id})">✏️</button><button class="btn btn-outline" style="padding:4px 6px;font-size:9px;flex:0;color:var(--red)" onclick="deleteList(${list.id})">🗑️</button></div>
+      </div>
+      <div class="progress"><div class="progress-fill" style="width:${pct}%;background:${progressColor}"></div></div>
+      <div style="margin-top:10px" id="items-${list.id}">
+        ${list.items.map(item=>{
+          const priColor=item.priority==='high'?'var(--red)': item.priority==='medium'?'var(--yellow)':'var(--green)';
+          return `<div class="task-item ${item.done?'done':''}">
+            <div class="check ${item.done?'done':''}" onclick="toggleTask(${list.id},${item.id})">${item.done?'✓':''}</div>
+            <div style="flex:1;min-width:0"><div class="task-text" style="font-size:11px;word-break:break-word">${item.text}</div>${item.note?`<div style="font-size:9px;color:var(--muted)">${item.note}</div>`:''}${item.dueDate?`<div style="font-size:9px;color:var(--muted)">📅 ${item.dueDate}</div>`:''}</div>
+            <div style="display:flex;flex-direction:column;align-items:end;gap:2px"><span style="width:8px;height:8px;border-radius:50%;background:${priColor};display:inline-block"></span><button style="background:transparent;border:none;color:var(--muted);font-size:10px;cursor:pointer" onclick="deleteTask(${list.id},${item.id})">✕</button></div>
+          </div>`;
+        }).join('') || '<div style="text-align:center;color:var(--muted);padding:12px;font-size:10px">No tasks yet • Add one</div>'}
+      </div>
+    </div>`;
+  }).join('') || '<div style="text-align:center;color:var(--muted);padding:20px">No lists yet<br><small>Create Major, Minor, Must Do lists</small></div>';
+
+  // Update task list select
+  const sel=document.getElementById('taskListSelect');
+  if(sel) sel.innerHTML=lists.map(l=>`<option value="${l.id}">${l.icon||''} ${l.name}</option>`).join('');
+}
+
+async function saveData(){
+  localStorage.setItem('loanbook_v2_full', JSON.stringify(data));
+  if(!navigator.onLine){ localStorage.setItem('fintrack_pending_sync','true'); }
+  try{
+    await fetch(CONFIG.API_URL+'/'+CONFIG.BIN_ID,{method:'PUT', headers:{'Content-Type':'application/json','X-Master-Key':CONFIG.API_KEY}, body:JSON.stringify(data)});
+    document.getElementById('statusText').textContent='Saved • Online';
+  }catch(e){ document.getElementById('statusText').textContent='Saved Locally'; }
+}
+
+// List CRUD
+window.openListModal=()=>{ editListId=null; document.getElementById('listModalTitle').textContent='New List'; document.getElementById('listName').value=''; document.getElementById('listType').value='custom'; document.getElementById('listIcon').value=''; document.getElementById('listDesc').value=''; document.getElementById('listModalBg').classList.add('open'); };
+window.closeListModal=()=>document.getElementById('listModalBg').classList.remove('open');
+window.editList=(id)=>{
+  const list=data.todo_lists.find(l=>l.id===id); if(!list) return;
+  editListId=id; document.getElementById('listModalTitle').textContent='Edit List'; document.getElementById('listName').value=list.name; document.getElementById('listType').value=list.type; document.getElementById('listIcon').value=list.icon; document.getElementById('listDesc').value=list.desc||''; document.getElementById('listModalBg').classList.add('open');
+};
+window.saveList=async()=>{
+  const name=document.getElementById('listName').value.trim();
+  const type=document.getElementById('listType').value;
+  const icon=document.getElementById('listIcon').value.trim() || (type==='major'?'🔴':type==='minor'?'🟡':type==='must'?'✅':'📋');
+  const desc=document.getElementById('listDesc').value.trim();
+  if(!name){ alert('List name dalo'); return; }
+  if(editListId){
+    const idx=data.todo_lists.findIndex(l=>l.id===editListId);
+    if(idx!==-1){ data.todo_lists[idx]={...data.todo_lists[idx], name, type, icon, desc, color:type}; }
+  } else {
+    data.todo_lists.push({id:Date.now(), name, type, icon, desc, color:type, items:[]});
+  }
+  closeListModal(); render(); await saveData();
+};
+window.deleteList=async(id)=>{
+  if(!confirm('Delete this whole list? All tasks will be deleted!')) return;
+  data.todo_lists=data.todo_lists.filter(l=>l.id!==id);
+  render(); await saveData();
+};
+
+// Task CRUD
+window.openTaskModalFor=(listId)=>{
+  currentTaskListId=listId;
+  document.getElementById('taskListSelect').value=listId;
+  document.getElementById('taskText').value='';
+  document.getElementById('taskNote').value='';
+  document.getElementById('taskDue').value='';
+  document.getElementById('taskPriority').value='medium';
+  document.getElementById('taskModalBg').classList.add('open');
+};
+window.openQuickAdd=()=>{
+  if(data.todo_lists.length===0){ alert('Pehle list banao'); openListModal(); return; }
+  openTaskModalFor(data.todo_lists[0].id);
+};
+window.closeTaskModal=()=>document.getElementById('taskModalBg').classList.remove('open');
+window.saveTask=async()=>{
+  const listId=parseInt(document.getElementById('taskListSelect').value);
+  const text=document.getElementById('taskText').value.trim();
+  const priority=document.getElementById('taskPriority').value;
+  const due=document.getElementById('taskDue').value;
+  const note=document.getElementById('taskNote').value.trim();
+  if(!text){ alert('Task likho'); return; }
+  const list=data.todo_lists.find(l=>l.id===listId);
+  if(!list){ alert('List not found'); return; }
+  list.items.unshift({id:Date.now(), text, done:false, priority, dueDate:due, note, createdAt:new Date().toISOString()});
+  closeTaskModal(); render(); await saveData();
+};
+let pendingExpenseTask=null;
+let pendingExpenseListId=null;
+
+function detectCategoryFromTask(taskText, listType){
+  const text=(taskText||'').toLowerCase();
+  if(text.includes('grocery')||text.includes('sabzi')||text.includes('chicken')||text.includes('meat')||text.includes('atta')||text.includes('dal')||text.includes('oil')||text.includes('milk')||text.includes('fruit')||text.includes('vegetable')||text.includes('kirana')) return 'grocery';
+  if(text.includes('cloth')||text.includes('shirt')||text.includes('kapra')||text.includes('suit')||text.includes('shoes')||text.includes('jacket')) return 'clothing';
+  if(text.includes('canteen')) return text.includes('barrack') ? 'canteen_barrack' : 'canteen_duty';
+  if(text.includes('cigarette')||text.includes('cig')) return 'cigarette';
+  if(text.includes('loan')||text.includes('udhar')||text.includes('return')) return 'loan_return';
+  if(text.includes('credit card')||text.includes('card bill')) return 'credit_card';
+  if(text.includes('travel')||text.includes('petrol')||text.includes('bus')||text.includes('ticket')||text.includes('uber')||text.includes('careem')) return 'travel';
+  if(text.includes('committee')||text.includes('daisy')||text.includes('bisi')) return 'committee';
+  if(text.includes('bill')||text.includes('bijli')||text.includes('gas')||text.includes('water')||text.includes('internet')||text.includes('utility')) return 'utilities';
+  if(text.includes('house')||text.includes('ghar')||text.includes('clean')||text.includes('repair')) return 'household';
+  // Based on list type
+  if(listType==='major' || listType==='shopping') return 'household';
+  if(listType==='minor') return 'grocery';
+  return 'other';
+}
+
+window.toggleTask=async(listId, taskId)=>{
+  const list=data.todo_lists.find(l=>l.id===listId); if(!list) return;
+  const task=list.items.find(t=>t.id===taskId); if(!task) return;
+  const wasDone=task.done;
+  task.done=!task.done;
+  render(); await saveData();
+  // If marked as complete (was not done before, now done) -> prompt expense
+  if(!wasDone && task.done){
+    pendingExpenseTask=task;
+    pendingExpenseListId=listId;
+    // Auto detect category
+    const detected=detectCategoryFromTask(task.text, list.type);
+    document.getElementById('expenseTaskName').textContent=task.text;
+    document.getElementById('expenseAmount').value='';
+    document.getElementById('expenseCategory').value=detected;
+    document.getElementById('expenseNote').value=`From To-Do: ${list.name} - ${task.text}`;
+    document.getElementById('expensePromptBg').classList.add('open');
+    // Focus amount
+    setTimeout(()=>document.getElementById('expenseAmount').focus(), 100);
+  }
+};
+
+window.closeExpensePrompt=()=>{
+  document.getElementById('expensePromptBg').classList.remove('open');
+  pendingExpenseTask=null;
+  pendingExpenseListId=null;
+};
+
+window.confirmExpenseAdd=async()=>{
+  const amount=parseFloat(document.getElementById('expenseAmount').value);
+  if(!amount){ alert('Amount dalo ya Skip karo'); return; }
+  const category=document.getElementById('expenseCategory').value;
+  const note=document.getElementById('expenseNote').value.trim() || (pendingExpenseTask ? pendingExpenseTask.text : '');
+  const today=new Date().toISOString().slice(0,10);
+  // Ensure expenses array exists
+  if(!data.expenses) data.expenses=[];
+  data.expenses.unshift({
+    id:Date.now(),
+    category:category,
+    amount:amount,
+    date:today,
+    note:note,
+    source:'todo',
+    todoTaskId: pendingExpenseTask ? pendingExpenseTask.id : null,
+    todoListId: pendingExpenseListId
+  });
+  // Mark task with expense linked
+  if(pendingExpenseTask){
+    pendingExpenseTask.expenseId=Date.now();
+    pendingExpenseTask.expenseAmount=amount;
+  }
+  closeExpensePrompt();
+  await saveData();
+  // Show small success
+  const toast=document.createElement('div');
+  toast.style.cssText='position:fixed;bottom:20px;left:12px;right:12px;background:var(--green);color:#000;padding:10px 14px;border-radius:10px;font-size:11px;font-weight:700;z-index:9999;text-align:center';
+  toast.textContent=`✅ Rs ${amount} added to Expenses (${category})`;
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(), 3000);
+};
+
+window.deleteTask=async(listId, taskId)=>{
+  if(!confirm('Delete task?')) return;
+  const list=data.todo_lists.find(l=>l.id===listId); if(!list) return;
+  list.items=list.items.filter(t=>t.id!==taskId);
+  render(); await saveData();
+};
+window.clearCompleted=async()=>{
+  if(!confirm('Delete all completed tasks from all lists?')) return;
+  data.todo_lists.forEach(l=>{ l.items=l.items.filter(t=>!t.done); });
+  render(); await saveData();
+};
+window.exportTodos=()=>{
+  const blob=new Blob([JSON.stringify(data.todo_lists,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=`Todo_Lists_${new Date().toISOString().slice(0,10)}.json`; a.click();
+  URL.revokeObjectURL(url);
+};
+
+document.getElementById('listModalBg').addEventListener('click',e=>{if(e.target.id==='listModalBg') closeListModal();});
+document.getElementById('taskModalBg').addEventListener('click',e=>{if(e.target.id==='taskModalBg') closeTaskModal();});
+
+load();
+</script>
+<script src="./pwa.js"></script>
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
+</html>
