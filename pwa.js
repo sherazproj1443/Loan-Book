@@ -6,7 +6,7 @@ let isOnline=navigator.onLine;
 function initPWA(){
   // Register SW
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js').then(reg=>{
+    navigator.serviceWorker.register('sw.js', {scope: './'}).then(reg=>{
       console.log('SW registered', reg.scope);
       // Check for updates
       reg.addEventListener('updatefound', ()=>{
