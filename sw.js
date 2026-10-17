@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fintrack-pro-v4-pin-avatar';
+const CACHE_NAME = 'fintrack-pro-v5-install-fix';
 const ASSETS = [
   './',
   './index.html',

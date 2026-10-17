@@ -1,10 +1,10 @@
 {
-  "id": "/",
+  "id": "./index.html",
   "name": "FinTrack Pro - Smart Finance Manager",
   "short_name": "FinTrack Pro",
   "description": "Professional expense tracker, loan manager & financial analytics",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "display_override": [
     "standalone",
@@ -17,12 +17,6 @@
     "finance",
     "productivity"
   ],
-  "launch_handler": {
-    "client_mode": [
-      "navigate-existing",
-      "auto"
-    ]
-  },
   "icons": [
     {
       "src": "./icons/icon-192.png",
@@ -53,6 +47,29 @@
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "./index.html",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Expenses",
+      "url": "./expenses.html",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }
