@@ -1,5 +1,4 @@
-
-const CACHE_NAME = 'fintrack-pro-v3';
+const CACHE_NAME = 'fintrack-pro-v4-pin-avatar';
 const ASSETS = [
   './',
   './index.html',
@@ -10,11 +9,14 @@ const ASSETS = [
   './analytics.html',
   './assets.html',
   './todos.html',
+  './auth.js',
   './manifest.json',
   './jsonbin-config.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  './icons/icon-180.png'
+  './icons/icon-180.png',
+  './icons/icon-192-maskable.png',
+  './icons/icon-512-maskable.png'
 ];
 
 self.addEventListener('install', e => {

@@ -1,9 +1,15 @@
 {
+  "id": "/",
   "name": "FinTrack Pro - Smart Finance Manager",
   "short_name": "FinTrack Pro",
-  "description": "Professional expense tracker, loan manager & financial analytics - your complete money management app",
-  "start_url": "./index.html",
+  "description": "Professional expense tracker, loan manager & financial analytics",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "background_color": "#0f1210",
   "theme_color": "#0f1210",
   "orientation": "portrait",
@@ -11,23 +17,41 @@
     "finance",
     "productivity"
   ],
+  "launch_handler": {
+    "client_mode": [
+      "navigate-existing",
+      "auto"
+    ]
+  },
   "icons": [
     {
-      "src": "./icons/icon-192.jpg",
+      "src": "./icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/jpg",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "./icons/icon-512.jpg",
+      "src": "./icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/jpg",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "./icons/icon-180.jpg",
+      "src": "./icons/icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icons/icon-180.png",
       "sizes": "180x180",
-      "type": "image/jpg",
+      "type": "image/png",
       "purpose": "any"
     }
   ]
