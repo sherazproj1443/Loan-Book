@@ -1,18 +1,17 @@
 
-// FinTrack Pro - PIN Authentication
+// FinTrack Pro - PIN Auth - Startup Only + Auto Lock on Close
 const PIN_KEY = 'fintrack_pin_hash';
 const PIN_ENABLED_KEY = 'fintrack_pin_enabled';
 const PIN_SALT = 'fintrack_salt_2026';
 const PIN_ATTEMPTS_KEY = 'fintrack_pin_attempts';
 const PIN_LOCKOUT_KEY = 'fintrack_pin_lockout';
+const SESSION_UNLOCKED = 'fintrack_session_unlocked';
+const SESSION_LAST_ACTIVE = 'fintrack_session_last_active';
 const PIN_LAST_ACTIVE = 'fintrack_last_active';
 
-let pinUnlocked = false;
-let inactivityTimer = null;
-const AUTO_LOCK_MINUTES = 2;
+const AUTO_LOCK_MINUTES = 2; // Auto lock after 2 min inactivity or app close
 
 function simpleHash(pin) {
-  // Simple hash with salt - not super secure but enough for local protection
   let str = PIN_SALT + pin + PIN_SALT;
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -27,9 +26,24 @@ function isPinEnabled() {
   return localStorage.getItem(PIN_ENABLED_KEY) === 'true' && localStorage.getItem(PIN_KEY);
 }
 
-function isLocked() {
-  if (!isPinEnabled()) return false;
-  if (pinUnlocked) return false;
+function isSessionUnlocked() {
+  // Check if unlocked in this browser session
+  if (sessionStorage.getItem(SESSION_UNLOCKED) !== 'true') return false;
+  
+  // Check if session expired (2 min inactivity)
+  const lastActive = parseInt(sessionStorage.getItem(SESSION_LAST_ACTIVE) || '0');
+  if (!lastActive) return false;
+  
+  const now = Date.now();
+  const diffMinutes = (now - lastActive) / (1000 * 60);
+  
+  if (diffMinutes > AUTO_LOCK_MINUTES) {
+    // Session expired
+    sessionStorage.removeItem(SESSION_UNLOCKED);
+    sessionStorage.removeItem(SESSION_LAST_ACTIVE);
+    return false;
+  }
+  
   return true;
 }
 
@@ -52,7 +66,7 @@ function recordFailedAttempt() {
   let attempts = parseInt(localStorage.getItem(PIN_ATTEMPTS_KEY) || '0') + 1;
   localStorage.setItem(PIN_ATTEMPTS_KEY, attempts.toString());
   if (attempts >= 5) {
-    const lockoutDuration = attempts >= 10 ? 5 * 60 * 1000 : 60 * 1000; // 1 min after 5, 5 min after 10
+    const lockoutDuration = attempts >= 10 ? 5 * 60 * 1000 : 60 * 1000;
     localStorage.setItem(PIN_LOCKOUT_KEY, (Date.now() + lockoutDuration).toString());
     return lockoutDuration;
   }
@@ -62,6 +76,19 @@ function recordFailedAttempt() {
 function clearAttempts() {
   localStorage.removeItem(PIN_ATTEMPTS_KEY);
   localStorage.removeItem(PIN_LOCKOUT_KEY);
+}
+
+function unlockSession() {
+  sessionStorage.setItem(SESSION_UNLOCKED, 'true');
+  const now = Date.now().toString();
+  sessionStorage.setItem(SESSION_LAST_ACTIVE, now);
+  localStorage.setItem(PIN_LAST_ACTIVE, now);
+  clearAttempts();
+}
+
+function lockSession() {
+  sessionStorage.removeItem(SESSION_UNLOCKED);
+  sessionStorage.removeItem(SESSION_LAST_ACTIVE);
 }
 
 function createPinUI() {
@@ -105,8 +132,6 @@ function createPinUI() {
     
     <div style="display:flex;gap:12px;margin-top:10px">
       <button id="pinForgotBtn" style="background:transparent;border:none;color:#8da090;font-size:11px;text-decoration:underline">Forgot PIN?</button>
-      <span style="color:#242e27">•</span>
-      <button id="pinBiometricBtn" style="background:transparent;border:none;color:#4da3ff;font-size:11px;display:none">Use Biometric</button>
     </div>
     
     <style>
@@ -120,7 +145,6 @@ function createPinUI() {
   
   document.body.appendChild(lockScreen);
   
-  // PIN input logic
   let currentPin = '';
   const dots = lockScreen.querySelectorAll('.pin-dot');
   
@@ -128,6 +152,43 @@ function createPinUI() {
     dots.forEach((dot, idx) => {
       dot.classList.toggle('filled', idx < currentPin.length);
     });
+  }
+  
+  function verifyPin(pin) {
+    const lockout = checkLockout();
+    if (lockout.locked) {
+      const msg = document.getElementById('pinLockoutMsg');
+      msg.style.display = 'block';
+      msg.textContent = `Too many attempts. Try again in ${lockout.remaining}s`;
+      return;
+    }
+    
+    const hashed = simpleHash(pin);
+    const stored = localStorage.getItem(PIN_KEY);
+    
+    if (hashed === stored) {
+      // Success
+      unlockSession();
+      lockScreen.remove();
+      startInactivityTimer();
+    } else {
+      // Fail
+      const duration = recordFailedAttempt();
+      dots.forEach(d => { d.classList.add('error'); setTimeout(()=>d.classList.remove('error'), 300); });
+      currentPin = '';
+      updateDots();
+      
+      const msgEl = document.getElementById('pinLockMessage');
+      const attempts = parseInt(localStorage.getItem(PIN_ATTEMPTS_KEY) || '0');
+      if (duration > 0) {
+        msgEl.textContent = `Wrong PIN! Locked for ${Math.ceil(duration/1000)}s`;
+        msgEl.style.color = '#ff4d4d';
+      } else {
+        msgEl.textContent = `Wrong PIN! Attempts: ${attempts}/5`;
+        msgEl.style.color = '#ff4d4d';
+        setTimeout(()=>{ msgEl.textContent='Enter PIN to unlock'; msgEl.style.color='#8da090'; }, 1500);
+      }
+    }
   }
   
   function handleKey(key) {
@@ -151,40 +212,7 @@ function createPinUI() {
     }
     updateDots();
     if (currentPin.length === 4) {
-      setTimeout(() => verifyPin(currentPin), 200);
-    }
-  }
-  
-  function verifyPin(pin) {
-    const storedHash = localStorage.getItem(PIN_KEY);
-    if (simpleHash(pin) === storedHash) {
-      // Success
-      clearAttempts();
-      pinUnlocked = true;
-      localStorage.setItem(PIN_LAST_ACTIVE, Date.now().toString());
-      lockScreen.style.transition = 'opacity 0.3s';
-      lockScreen.style.opacity = '0';
-      setTimeout(() => {
-        lockScreen.remove();
-        startInactivityTimer();
-      }, 300);
-    } else {
-      // Fail
-      const lockoutDuration = recordFailedAttempt();
-      dots.forEach(d => { d.classList.add('error'); setTimeout(() => d.classList.remove('error'), 500); });
-      currentPin = '';
-      updateDots();
-      const msg = document.getElementById('pinLockMessage');
-      const attempts = parseInt(localStorage.getItem(PIN_ATTEMPTS_KEY) || '0');
-      if (lockoutDuration > 0) {
-        const lockMsg = document.getElementById('pinLockoutMsg');
-        lockMsg.style.display = 'block';
-        lockMsg.textContent = `Locked for ${lockoutDuration/1000}s after ${attempts} failed attempts`;
-      } else {
-        msg.textContent = `Wrong PIN (${attempts}/5 attempts)`;
-        msg.style.color = '#ff4d4d';
-        setTimeout(() => { msg.textContent = 'Enter PIN to unlock'; msg.style.color = '#8da090'; }, 2000);
-      }
+      setTimeout(()=>verifyPin(currentPin), 200);
     }
   }
   
@@ -192,101 +220,40 @@ function createPinUI() {
     btn.addEventListener('click', () => handleKey(btn.dataset.key));
   });
   
-  // Keyboard support
-  document.addEventListener('keydown', function pinKeyHandler(e) {
-    if (!document.getElementById('pinLockScreen')) {
-      document.removeEventListener('keydown', pinKeyHandler);
-      return;
-    }
-    if (/[0-9]/.test(e.key)) handleKey(e.key);
-    else if (e.key === 'Backspace') handleKey('clear');
-    else if (e.key === 'Enter') handleKey('enter');
-  });
-  
-  // Forgot PIN
-  document.getElementById('pinForgotBtn').addEventListener('click', () => {
-    showForgotPinDialog();
-  });
-  
-  // Check for biometric
-  if (window.PublicKeyCredential) {
-    // Could implement WebAuthn later
-  }
-}
-
-function showForgotPinDialog() {
-  const existing = document.getElementById('forgotPinModal');
-  if (existing) existing.remove();
-  
-  const modal = document.createElement('div');
-  modal.id = 'forgotPinModal';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:1000000;display:grid;place-items:center;padding:20px';
-  modal.innerHTML = `
-    <div style="background:#1a201c;border:1px solid #2a352e;border-radius:18px;padding:20px;width:100%;max-width:340px">
-      <h3 style="color:#e8efe9;font-size:16px;margin-bottom:8px">🔓 Forgot PIN?</h3>
-      <p style="color:#8da090;font-size:11px;margin-bottom:16px">To reset PIN, you need to verify your JSONBin credentials or clear app data. Your cloud data is safe on JSONBin.</p>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <button id="resetPinWithBin" style="background:#e8efe9;color:#000;border:none;padding:10px;border-radius:10px;font-weight:700;font-size:12px">Reset with BIN ID & Key</button>
-        <button id="clearAllData" style="background:#ff4d4d;color:#fff;border:none;padding:10px;border-radius:10px;font-weight:700;font-size:12px">Clear Local Data & Reset PIN</button>
-        <button id="cancelForgot" style="background:transparent;border:1px solid #242e27;color:#8da090;padding:10px;border-radius:10px;font-weight:700;font-size:12px">Cancel</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-  
-  modal.querySelector('#cancelForgot').onclick = () => modal.remove();
-  modal.querySelector('#clearAllData').onclick = () => {
-    if (confirm('Clear local PIN and data? Cloud data on JSONBin will remain. You will need to re-enter BIN_ID and API Key.')) {
-      localStorage.removeItem(PIN_KEY);
-      localStorage.removeItem(PIN_ENABLED_KEY);
-      localStorage.removeItem(PIN_ATTEMPTS_KEY);
-      localStorage.removeItem(PIN_LOCKOUT_KEY);
-      alert('PIN reset! Reloading...');
-      location.reload();
+  lockScreen.querySelector('#pinForgotBtn').onclick = () => {
+    if (confirm('Forgot PIN? This will clear your PIN and you can set a new one. Your financial data will remain. Continue?')) {
+      const confirmText = prompt('Type "DELETE PIN" to confirm:');
+      if (confirmText === 'DELETE PIN') {
+        localStorage.removeItem(PIN_KEY);
+        localStorage.removeItem(PIN_ENABLED_KEY);
+        clearAttempts();
+        lockSession();
+        lockScreen.remove();
+        alert('PIN removed! You can set a new PIN from dashboard.');
+      }
     }
   };
-  modal.querySelector('#resetPinWithBin').onclick = () => {
-    const binId = prompt('Enter your BIN_ID (from jsonbin-config.js):');
-    const apiKey = prompt('Enter your X-Master-Key:');
-    if (binId && apiKey) {
-      // Verify by trying to fetch
-      fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, { headers: { 'X-Master-Key': apiKey } })
-        .then(r => {
-          if (r.ok) {
-            localStorage.removeItem(PIN_KEY);
-            localStorage.removeItem(PIN_ENABLED_KEY);
-            alert('Verified! PIN has been reset. You can set a new PIN after unlocking.');
-            location.reload();
-          } else {
-            alert('Invalid BIN_ID or Key');
-          }
-        })
-        .catch(() => alert('Verification failed - check internet'));
-    }
-  };
-  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 }
 
 function showPinSetup() {
-  const existing = document.getElementById('pinSetupModal');
-  if (existing) existing.remove();
+  if (document.getElementById('pinSetupModal')) return;
   
   const modal = document.createElement('div');
   modal.id = 'pinSetupModal';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:1000000;display:grid;place-items:center;padding:20px';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:999998;background:rgba(0,0,0,0.85);display:grid;place-items:center;padding:12px;font-family:Inter,sans-serif';
   modal.innerHTML = `
-    <div style="background:#1a201c;border:1px solid #2a352e;border-radius:18px;padding:20px;width:100%;max-width:340px">
-      <h3 style="color:#e8efe9;font-size:16px;margin-bottom:4px" id="pinSetupTitle">🔒 Setup PIN</h3>
-      <p style="color:#8da090;font-size:11px;margin-bottom:16px" id="pinSetupDesc">Create a 4-digit PIN to protect your financial data</p>
+    <div style="width:100%;max-width:340px;background:#1a201c;border:1px solid #2a352e;border-radius:18px;padding:20px;text-align:center">
+      <h3 id="pinSetupTitle" style="color:#e8efe9;font-size:18px;margin-bottom:6px">🔒 Setup PIN</h3>
+      <p id="pinSetupDesc" style="color:#8da090;font-size:11px;margin-bottom:16px">Create a 4-digit PIN for app startup protection</p>
       
-      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px" id="setupDots">
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:20px" id="setupDots">
         <div class="setup-dot" style="width:12px;height:12px;border-radius:50%;background:#1e2521;border:2px solid #242e27"></div>
         <div class="setup-dot" style="width:12px;height:12px;border-radius:50%;background:#1e2521;border:2px solid #242e27"></div>
         <div class="setup-dot" style="width:12px;height:12px;border-radius:50%;background:#1e2521;border:2px solid #242e27"></div>
         <div class="setup-dot" style="width:12px;height:12px;border-radius:50%;background:#1e2521;border:2px solid #242e27"></div>
       </div>
       
-      <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;margin-bottom:16px">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
         <button class="setup-key" data-key="1">1</button>
         <button class="setup-key" data-key="2">2</button>
         <button class="setup-key" data-key="3">3</button>
@@ -296,18 +263,18 @@ function showPinSetup() {
         <button class="setup-key" data-key="7">7</button>
         <button class="setup-key" data-key="8">8</button>
         <button class="setup-key" data-key="9">9</button>
-        <button class="setup-key" data-key="clear" style="font-size:14px">⌫</button>
+        <button class="setup-key" data-key="clear" style="color:#8da090">⌫</button>
         <button class="setup-key" data-key="0">0</button>
-        <button class="setup-key" data-key="enter" style="font-size:14px;color:#1ed760">✓</button>
+        <button class="setup-key" data-key="enter" style="color:#1ed760">✓</button>
       </div>
       
       <div style="display:flex;gap:8px">
-        <button id="cancelPinSetup" style="flex:1;background:transparent;border:1px solid #242e27;color:#8da090;padding:10px;border-radius:10px;font-weight:700;font-size:12px">Cancel</button>
-        <button id="clearPinSetup" style="flex:1;background:#ff4d4d;color:#fff;border:none;padding:10px;border-radius:10px;font-weight:700;font-size:12px;display:none">Clear PIN</button>
+        <button id="cancelPinSetup" style="flex:1;background:#171c19;border:1px solid #242e27;color:#e8efe9;padding:10px;border-radius:10px;font-size:11px;font-weight:700">Cancel</button>
+        <button id="clearPinSetup" style="flex:1;background:transparent;border:1px solid #ff4d4d;color:#ff4d4d;padding:10px;border-radius:10px;font-size:11px;font-weight:700;display:none">Disable PIN</button>
       </div>
       
       <style>
-        .setup-key{height:56px;background:#121512;border:1px solid #242e27;border-radius:12px;color:#e8efe9;font-size:20px;font-weight:700;cursor:pointer}
+        .setup-key{height:56px;background:#171c19;border:1px solid #242e27;border-radius:14px;color:#e8efe9;font-size:20px;font-weight:700}
         .setup-key:active{background:#1e2521;transform:scale(0.95)}
         .setup-dot.filled{background:#1ed760 !important;border-color:#1ed760 !important}
       </style>
@@ -317,7 +284,7 @@ function showPinSetup() {
   
   let firstPin = '';
   let currentPin = '';
-  let step = 'first'; // first, confirm
+  let step = 'first';
   
   const dots = modal.querySelectorAll('.setup-dot');
   const title = modal.querySelector('#pinSetupTitle');
@@ -343,21 +310,21 @@ function showPinSetup() {
           updateDots();
         } else {
           if (currentPin === firstPin) {
-            // Save PIN
             localStorage.setItem(PIN_KEY, simpleHash(currentPin));
             localStorage.setItem(PIN_ENABLED_KEY, 'true');
             clearAttempts();
-            pinUnlocked = true;
+            unlockSession();
             modal.remove();
-            alert('✅ PIN setup successful! Your data is now protected.');
+            alert('✅ PIN setup successful! Now app will lock only on startup and when closed.');
             startInactivityTimer();
+            updatePinButton();
           } else {
             alert('PINs do not match! Try again.');
             firstPin = '';
             currentPin = '';
             step = 'first';
             title.textContent = '🔒 Setup PIN';
-            desc.textContent = 'Create a 4-digit PIN to protect your financial data';
+            desc.textContent = 'Create a 4-digit PIN for app startup protection';
             updateDots();
           }
         }
@@ -368,7 +335,6 @@ function showPinSetup() {
     }
     updateDots();
     if (currentPin.length === 4 && step === 'first') {
-      // Auto move to confirm after small delay
       setTimeout(() => {
         firstPin = currentPin;
         currentPin = '';
@@ -383,17 +349,18 @@ function showPinSetup() {
           localStorage.setItem(PIN_KEY, simpleHash(currentPin));
           localStorage.setItem(PIN_ENABLED_KEY, 'true');
           clearAttempts();
-          pinUnlocked = true;
+          unlockSession();
           modal.remove();
-          alert('✅ PIN setup successful! Your data is now protected.');
+          alert('✅ PIN setup successful! Now app will lock only on startup and when closed.');
           startInactivityTimer();
+          updatePinButton();
         } else {
           alert('PINs do not match! Try again.');
           firstPin = '';
           currentPin = '';
           step = 'first';
           title.textContent = '🔒 Setup PIN';
-          desc.textContent = 'Create a 4-digit PIN to protect your financial data';
+          desc.textContent = 'Create a 4-digit PIN for app startup protection';
           updateDots();
         }
       }, 300);
@@ -406,19 +373,20 @@ function showPinSetup() {
   
   modal.querySelector('#cancelPinSetup').onclick = () => modal.remove();
   
-  // If PIN already enabled, show clear option
   if (isPinEnabled()) {
     const clearBtn = modal.querySelector('#clearPinSetup');
     clearBtn.style.display = 'block';
     clearBtn.onclick = () => {
-      if (confirm('Disable PIN protection? Your data will not be PIN protected.')) {
+      if (confirm('Disable PIN protection?')) {
         const current = prompt('Enter current PIN to disable:');
         if (current && simpleHash(current) === localStorage.getItem(PIN_KEY)) {
           localStorage.removeItem(PIN_KEY);
           localStorage.removeItem(PIN_ENABLED_KEY);
           clearAttempts();
+          lockSession();
           alert('PIN disabled!');
           modal.remove();
+          updatePinButton();
         } else {
           alert('Wrong PIN!');
         }
@@ -429,71 +397,110 @@ function showPinSetup() {
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 }
 
+let inactivityTimer = null;
+
 function startInactivityTimer() {
   if (inactivityTimer) clearTimeout(inactivityTimer);
   inactivityTimer = setTimeout(() => {
-    if (isPinEnabled()) {
-      pinUnlocked = false;
+    if (isPinEnabled() && isSessionUnlocked()) {
+      lockSession();
       createPinUI();
     }
   }, AUTO_LOCK_MINUTES * 60 * 1000);
 }
 
 function resetInactivityTimer() {
-  localStorage.setItem(PIN_LAST_ACTIVE, Date.now().toString());
-  if (isPinEnabled() && pinUnlocked) {
+  const now = Date.now().toString();
+  sessionStorage.setItem(SESSION_LAST_ACTIVE, now);
+  localStorage.setItem(PIN_LAST_ACTIVE, now);
+  if (isPinEnabled() && isSessionUnlocked()) {
     startInactivityTimer();
   }
 }
 
-// Initialize PIN system
+function updatePinButton() {
+  const btn = document.getElementById('pinSettingsBtn');
+  if (btn) {
+    btn.textContent = isPinEnabled() ? '🔒 PIN ON' : '🔓 PIN OFF';
+  }
+}
+
+// Handle app close / tab close / PWA close -> Auto lock
+window.addEventListener('pagehide', () => {
+  // When user closes app/tab, clear session unlock so next startup asks PIN
+  // Actually sessionStorage auto clears on tab close, but for PWA we explicitly lock
+  if (isPinEnabled()) {
+    // Don't clear immediately on pagehide for navigation, 
+    // sessionStorage will persist for same tab navigation
+    // But we set a flag that this was a close
+    localStorage.setItem('fintrack_was_closed', 'true');
+  }
+});
+
+window.addEventListener('beforeunload', () => {
+  // For PWA, when app is closed, session will be cleared automatically
+  // This ensures next launch requires PIN
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    // App goes to background
+    localStorage.setItem('fintrack_background_time', Date.now().toString());
+  } else {
+    // App comes to foreground
+    const bgTime = parseInt(localStorage.getItem('fintrack_background_time') || '0');
+    if (bgTime) {
+      const diffMinutes = (Date.now() - bgTime) / (1000 * 60);
+      // If app was in background for more than 2 minutes, lock it
+      if (diffMinutes > AUTO_LOCK_MINUTES && isPinEnabled() && isSessionUnlocked()) {
+        lockSession();
+        createPinUI();
+      }
+    }
+    resetInactivityTimer();
+  }
+});
+
 function initPinAuth() {
-  // Check if PIN is enabled and not unlocked
-  if (isPinEnabled() && !pinUnlocked) {
-    // Small delay to let page load
-    setTimeout(() => createPinUI(), 500);
+  // Only show PIN on startup if session not unlocked
+  if (isPinEnabled() && !isSessionUnlocked()) {
+    setTimeout(() => createPinUI(), 600);
+  } else if (isPinEnabled() && isSessionUnlocked()) {
+    // Already unlocked in this session, just start timer
+    startInactivityTimer();
   }
   
-  // Activity listeners for auto-lock
-  ['click', 'keydown', 'touchstart', 'mousemove'].forEach(event => {
+  // Activity listeners - update last active time but DON'T lock on every page change
+  ['click', 'keydown', 'touchstart'].forEach(event => {
     document.addEventListener(event, resetInactivityTimer, { passive: true });
   });
   
-  // Expose global functions
   window.setupPin = showPinSetup;
-  window.disablePin = () => {
-    if (!isPinEnabled()) { alert('PIN is not enabled'); return; }
-    showPinSetup();
-  };
+  window.disablePin = () => { showPinSetup(); };
   window.isPinEnabled = isPinEnabled;
   window.lockApp = () => {
     if (isPinEnabled()) {
-      pinUnlocked = false;
+      lockSession();
       createPinUI();
     }
   };
+  window.unlockSession = unlockSession;
 }
 
-// Auto init
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initPinAuth);
 } else {
   initPinAuth();
 }
 
-// Also inject PIN settings button into page if dashboard
 setTimeout(() => {
-  const container = document.querySelector('.container');
-  if (container && !document.getElementById('pinSettingsBtn')) {
-    // Find status bar and add PIN button
-    const statusBar = document.getElementById('statusText');
-    if (statusBar) {
-      const pinBtn = document.createElement('button');
-      pinBtn.id = 'pinSettingsBtn';
-      pinBtn.style.cssText = 'margin-left:auto;background:transparent;border:1px solid #242e27;color:#8da090;padding:4px 8px;border-radius:8px;font-size:10px;cursor:pointer';
-      pinBtn.textContent = isPinEnabled() ? '🔒 PIN ON' : '🔓 PIN OFF';
-      pinBtn.onclick = () => showPinSetup();
-      statusBar.parentElement.appendChild(pinBtn);
-    }
+  const statusBar = document.getElementById('statusText');
+  if (statusBar && !document.getElementById('pinSettingsBtn')) {
+    const pinBtn = document.createElement('button');
+    pinBtn.id = 'pinSettingsBtn';
+    pinBtn.style.cssText = 'margin-left:auto;background:transparent;border:1px solid #242e27;color:#8da090;padding:4px 8px;border-radius:8px;font-size:10px;cursor:pointer';
+    pinBtn.textContent = isPinEnabled() ? '🔒 PIN ON' : '🔓 PIN OFF';
+    pinBtn.onclick = () => showPinSetup();
+    statusBar.parentElement.appendChild(pinBtn);
   }
-}, 1000);
+}, 1200);
