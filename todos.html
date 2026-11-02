@@ -24,11 +24,154 @@
 </style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<link rel="manifest" href="./manifest.json">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
 <meta name="theme-color" content="#0f1210">
 <title>To-Do Lists - FinTrack Pro</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
+
+/* Hamburger + Drawer + Theme - shared */
+:root{
+  --bg:#0a0e0c;
+  --card:#131a16;
+  --card2:#1a2320;
+  --card3:#1e2a26;
+  --border:#1f2e28;
+  --border2:#26362f;
+  --text:#eef6f0;
+  --muted:#7a9480;
+  --muted2:#5c7564;
+  --green:#1ed760;
+  --green2:#19b850;
+  --red:#ff4d5a;
+  --yellow:#ffb020;
+  --blue:#4da3ff;
+  --orange:#ff8c42;
+}
+[data-theme="light"]{
+  --bg:#f5f7f6;
+  --card:#ffffff;
+  --card2:#eef2ef;
+  --card3:#e6ece8;
+  --border:#dde6df;
+  --border2:#c8d8cc;
+  --text:#0f1a13;
+  --muted:#6b8473;
+  --muted2:#8da090;
+}
+.topbar{position:sticky;top:0;z-index:40;background:rgba(10,14,12,0.92);backdrop-filter:blur(20px);margin:-12px -14px 14px;padding:12px 14px;border-bottom:1px solid var(--border);transition:background .3s}
+[data-theme="light"] .topbar{background:rgba(255,255,255,0.92)}
+.topbar-row{display:flex;justify-content:space-between;align-items:center}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.hamburger{width:36px;height:36px;border-radius:10px;background:var(--card);border:1px solid var(--border);display:grid;place-items:center;cursor:pointer;transition:.2s}
+.hamburger:active{transform:scale(0.92)}
+.hamburger span{width:16px;height:2px;background:var(--text);border-radius:2px;display:block;position:relative;transition:.3s}
+.hamburger span::before,.hamburger span::after{content:'';position:absolute;left:0;width:16px;height:2px;background:var(--text);border-radius:2px;transition:.3s}
+.hamburger span::before{top:-5px}
+.hamburger span::after{top:5px}
+.hamburger.active span{background:transparent}
+.hamburger.active span::before{transform:rotate(45deg);top:0}
+.hamburger.active span::after{transform:rotate(-45deg);top:0}
+.logo{font-weight:800;font-size:17px;letter-spacing:-0.3px;display:flex;align-items:center;gap:8px}
+.logo-icon{width:30px;height:30px;background:var(--text);color:var(--bg);border-radius:9px;display:grid;place-items:center;font-weight:800;font-size:12px;transition:.3s}
+.logo span{color:var(--text);font-weight:500;opacity:0.7;font-size:15px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.theme-btn{width:36px;height:36px;border-radius:10px;background:var(--card);border:1px solid var(--border);display:grid;place-items:center;cursor:pointer;font-size:14px;transition:.2s}
+.theme-btn:active{transform:scale(0.92)}
+.sync-pill{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);padding:6px 10px;border-radius:999px;font-size:10px;color:var(--muted)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(2px);z-index:50;opacity:0;pointer-events:none;transition:.3s}
+.drawer-overlay.open{opacity:1;pointer-events:auto}
+.side-drawer{position:fixed;top:0;left:0;bottom:0;width:78%;max-width:300px;background:var(--card);border-right:1px solid var(--border2);z-index:60;transform:translateX(-100%);transition:transform .35s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;overflow:hidden}
+.side-drawer.open{transform:translateX(0)}
+.drawer-header{padding:20px 18px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.drawer-logo{width:40px;height:40px;background:var(--text);color:var(--bg);border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:14px}
+.drawer-title{font-weight:800;font-size:16px;line-height:1.1}
+.drawer-title span{font-weight:500;opacity:0.6;font-size:13px;display:block}
+.drawer-nav{flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:4px}
+.drawer-link{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;text-decoration:none;color:var(--muted);font-weight:600;font-size:13px;transition:.2s;border:1px solid transparent}
+.drawer-link:hover{background:var(--card2);color:var(--text)}
+.drawer-link.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.drawer-link-icon{width:28px;height:28px;border-radius:8px;background:var(--card2);display:grid;place-items:center;font-size:14px;transition:.2s}
+.drawer-link.active .drawer-link-icon{background:rgba(0,0,0,0.15)}
+.drawer-divider{height:1px;background:var(--border);margin:10px 6px}
+.drawer-footer{padding:12px 10px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.drawer-footer-btn{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:11px;background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.drawer-footer-btn:active{transform:scale(0.97)}
+
+
+
+:root{
+  --bg:#0a0e0c;
+  --card:#131a16;
+  --card2:#1a2320;
+  --card3:#1e2a26;
+  --border:#1f2e28;
+  --border2:#26362f;
+  --text:#eef6f0;
+  --muted:#7a9480;
+  --muted2:#5c7564;
+  --green:#1ed760;
+  --green2:#19b850;
+  --red:#ff4d5a;
+  --yellow:#ffb020;
+  --blue:#4da3ff;
+  --orange:#ff8c42;
+}
+[data-theme="light"]{
+  --bg:#f5f7f6;
+  --card:#ffffff;
+  --card2:#eef2ef;
+  --card3:#e6ece8;
+  --border:#dde6df;
+  --border2:#c8d8cc;
+  --text:#0f1a13;
+  --muted:#6b8473;
+  --muted2:#8da090;
+}
+.topbar{position:sticky;top:0;z-index:40;background:rgba(10,14,12,0.92);backdrop-filter:blur(20px);margin:-12px -14px 14px;padding:12px 14px;border-bottom:1px solid var(--border);transition:background .3s}
+[data-theme="light"] .topbar{background:rgba(255,255,255,0.92)}
+.topbar-row{display:flex;justify-content:space-between;align-items:center}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.hamburger{width:36px;height:36px;border-radius:10px;background:var(--card);border:1px solid var(--border);display:grid;place-items:center;cursor:pointer;transition:.2s}
+.hamburger:active{transform:scale(0.92)}
+.hamburger span{width:16px;height:2px;background:var(--text);border-radius:2px;display:block;position:relative;transition:.3s}
+.hamburger span::before,.hamburger span::after{content:'';position:absolute;left:0;width:16px;height:2px;background:var(--text);border-radius:2px;transition:.3s}
+.hamburger span::before{top:-5px}
+.hamburger span::after{top:5px}
+.hamburger.active span{background:transparent}
+.hamburger.active span::before{transform:rotate(45deg);top:0}
+.hamburger.active span::after{transform:rotate(-45deg);top:0}
+.logo{font-weight:800;font-size:17px;letter-spacing:-0.3px;display:flex;align-items:center;gap:8px}
+.logo-icon{width:30px;height:30px;background:var(--text);color:var(--bg);border-radius:9px;display:grid;place-items:center;font-weight:800;font-size:12px;transition:.3s}
+.logo span{color:var(--text);font-weight:500;opacity:0.7;font-size:15px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.theme-btn{width:36px;height:36px;border-radius:10px;background:var(--card);border:1px solid var(--border);display:grid;place-items:center;cursor:pointer;font-size:14px;transition:.2s}
+.theme-btn:active{transform:scale(0.92)}
+.sync-pill{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);padding:6px 10px;border-radius:999px;font-size:10px;color:var(--muted)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(2px);z-index:50;opacity:0;pointer-events:none;transition:.3s}
+.drawer-overlay.open{opacity:1;pointer-events:auto}
+.side-drawer{position:fixed;top:0;left:0;bottom:0;width:78%;max-width:300px;background:var(--card);border-right:1px solid var(--border2);z-index:60;transform:translateX(-100%);transition:transform .35s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;overflow:hidden}
+.side-drawer.open{transform:translateX(0)}
+.drawer-header{padding:20px 18px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.drawer-logo{width:40px;height:40px;background:var(--text);color:var(--bg);border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:14px}
+.drawer-title{font-weight:800;font-size:16px;line-height:1.1}
+.drawer-title span{font-weight:500;opacity:0.6;font-size:13px;display:block}
+.drawer-nav{flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:4px}
+.drawer-link{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;text-decoration:none;color:var(--muted);font-weight:600;font-size:13px;transition:.2s;border:1px solid transparent}
+.drawer-link:hover{background:var(--card2);color:var(--text)}
+.drawer-link.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.drawer-link-icon{width:28px;height:28px;border-radius:8px;background:var(--card2);display:grid;place-items:center;font-size:14px;transition:.2s}
+.drawer-link.active .drawer-link-icon{background:rgba(0,0,0,0.15)}
+.drawer-divider{height:1px;background:var(--border);margin:10px 6px}
+.drawer-footer{padding:12px 10px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.drawer-footer-btn{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:11px;background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.drawer-footer-btn:active{transform:scale(0.97)}
+
 :root{--bg:#0f1210;--card:#171c19;--card2:#1e2521;--border:#242e27;--text:#e8efe9;--muted:#8da090;--green:#1ed760;--red:#ff4d4d;--yellow:#ffb020;--blue:#4da3ff;--orange:#ff8c42;--purple:#a78bfa}
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
 body{background:var(--bg);color:var(--text)} .container{max-width:390px;margin:0 auto;padding:14px 12px 110px}
@@ -62,22 +205,49 @@ body{background:var(--bg);color:var(--text)} .container{max-width:390px;margin:0
 </head>
 <body>
 <div class="container">
-<div class="topbar"><div class="logo">FinTrack<span>Pro</span></div>
-<div class="nav">
-<div class="nav-row">
-<a href="index.html" class="">Dashboard</a>
-<a href="transactions.html" class="">Loans</a>
-<a href="incomes.html" class="">Income</a>
-<a href="expenses.html" class="">Expenses</a>
+
+<!-- NEW HAMBURGER TOPBAR -->
+
+<!-- NEW HAMBURGER TOPBAR -->
+<div class="topbar">
+  <div class="topbar-row">
+    <div class="topbar-left">
+      <div class="hamburger" id="hamburgerBtn" onclick="toggleDrawer()"><span></span></div>
+      <div class="logo"><div class="logo-icon">Rs</div> FinTrack <span>Pro</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Change Theme">🌙</div>
+      <div class="sync-pill"><span class="sync-dot"></span><span id="statusText">Loading...</span></div>
+    </div>
+  </div>
 </div>
-<div class="nav-row">
-<a href="profiles.html" class="">Profiles</a>
-<a href="analytics.html" class="">Analytics</a>
-<a href="assets.html" class="">Assets</a>
-<a href="todos.html" class="active">To-Do</a>
+<div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
+<div class="side-drawer" id="sideDrawer">
+  <div class="drawer-header">
+    <div class="drawer-logo">Rs</div>
+    <div class="drawer-title">FinTrack <span>Pro • Smart Finance</span></div>
+  </div>
+  <div class="drawer-nav">
+    <a href="index.html" class="drawer-link"><div class="drawer-link-icon">📊</div> Dashboard </a>
+    <a href="transactions.html" class="drawer-link"><div class="drawer-link-icon">💸</div> Loans </a>
+    <a href="incomes.html" class="drawer-link"><div class="drawer-link-icon">↑</div> Income </a>
+    <a href="expenses.html" class="drawer-link"><div class="drawer-link-icon">↓</div> Expenses </a>
+    <a href="profiles.html" class="drawer-link"><div class="drawer-link-icon">👤</div> Profiles </a>
+    <a href="analytics.html" class="drawer-link"><div class="drawer-link-icon">📈</div> Analytics </a>
+    <a href="assets.html" class="drawer-link"><div class="drawer-link-icon">🏠</div> Assets </a>
+    <a href="todos.html" class="drawer-link active"><div class="drawer-link-icon">✅</div> To-Do Lists <span style="margin-left:auto;font-size:10px;opacity:0.5">●</span></a>
+    
+    <div class="drawer-divider"></div>
+    <a href="settings.html" class="drawer-link"><div class="drawer-link-icon">⚙️</div> Settings <span style="margin-left:auto;background:var(--green);color:#000;font-size:8px;padding:2px 6px;border-radius:99px;font-weight:800">NEW</span></a>
+  </div>
+  <div class="drawer-footer">
+    <div class="drawer-footer-btn" onclick="toggleTheme()"><span>🌓 Change Theme</span><span id="themeLabel" style="font-size:10px;color:var(--muted)">Dark</span></div>
+    <div class="drawer-footer-btn" onclick="window.location.href='settings.html'"><span>⚙️ App Settings</span><span style="font-size:10px">→</span></div>
+    <div style="font-size:9px;color:var(--muted2);text-align:center;margin-top:4px">v2.0 • Financial Track Pro</div>
+  </div>
 </div>
-</div>
-</div>
+
+
 <div class="status-bar"><span id="statusText">Loading...</span><span id="syncText" style="font-size:10px;color:var(--muted)">--</span></div>
 
 <div class="grid2">
@@ -166,6 +336,50 @@ body{background:var(--bg);color:var(--text)} .container{max-width:390px;margin:0
 <script type="module">
 import { JSONBIN_CONFIG } from './jsonbin-config.js';
 let CONFIG=JSONBIN_CONFIG; const s=localStorage.getItem('jsonbin_config'); if(s){try{const j=JSON.parse(s); if(j.BIN_ID!='YOUR_BIN_ID') CONFIG=j;}catch(e){}}
+
+// Theme & Drawer Logic (shared)
+window.toggleDrawer=()=>{
+  const drawer=document.getElementById('sideDrawer');
+  const overlay=document.getElementById('drawerOverlay');
+  const btn=document.getElementById('hamburgerBtn');
+  if(!drawer) return;
+  const isOpen=drawer.classList.contains('open');
+  if(isOpen){
+    drawer.classList.remove('open'); overlay.classList.remove('open'); if(btn) btn.classList.remove('active');
+    document.body.style.overflow='';
+  } else {
+    drawer.classList.add('open'); overlay.classList.add('open'); if(btn) btn.classList.add('active');
+    document.body.style.overflow='hidden';
+  }
+}
+window.toggleTheme=()=>{
+  const current=document.documentElement.getAttribute('data-theme');
+  const next=current==='light'?'dark':'light';
+  if(next==='light'){ 
+    document.documentElement.setAttribute('data-theme','light'); 
+    localStorage.setItem('fintrack_theme','light'); 
+    const b=document.getElementById('themeBtn'); if(b) b.textContent='☀️';
+    const l=document.getElementById('themeLabel'); if(l) l.textContent='Light';
+    const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.setAttribute('content','#f5f7f6');
+  } else { 
+    document.documentElement.removeAttribute('data-theme'); 
+    localStorage.setItem('fintrack_theme','dark'); 
+    const b=document.getElementById('themeBtn'); if(b) b.textContent='🌙';
+    const l=document.getElementById('themeLabel'); if(l) l.textContent='Dark';
+    const meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.setAttribute('content','#0a0e0c');
+  }
+}
+(function initTheme(){
+  const saved=localStorage.getItem('fintrack_theme')||'dark';
+  if(saved==='light'){ 
+    document.documentElement.setAttribute('data-theme','light'); 
+    setTimeout(()=>{ 
+      const b=document.getElementById('themeBtn'); if(b) b.textContent='☀️';
+      const l=document.getElementById('themeLabel'); if(l) l.textContent='Light';
+    },100);
+  }
+})();
+
 let data={loans:[], incomes:[], expenses:[], assets:[], dsp_fund:null, todo_lists:[]};
 let editListId=null; let currentTaskListId=null;
 
@@ -187,8 +401,14 @@ async function load(){
   document.getElementById('statusText').textContent='Online';
   render();
  }catch(e){
+  // Try main backup first, then todos backup
   const local=localStorage.getItem('loanbook_v2_full');
-  if(local){ try{ const parsed=JSON.parse(local); data={...data, ...parsed}; if(!data.todo_lists) data.todo_lists=[]; }catch{} }
+  if(local){ try{ const parsed=JSON.parse(local); data={...data, ...parsed}; if(parsed.todo_lists) data.todo_lists=parsed.todo_lists; }catch(e){} }
+  // If still empty, try dedicated todos backup
+  if(!data.todo_lists || data.todo_lists.length===0){
+    const todoBackup=localStorage.getItem('fintrack_todos_backup');
+    if(todoBackup){ try{ data.todo_lists=JSON.parse(todoBackup); }catch(e){} }
+  }
   if(!data.todo_lists || data.todo_lists.length===0){
     data.todo_lists=[
       {id:1, name:'Major Items List', type:'major', icon:'🔴', desc:'Big/Important shopping', color:'major', items:[]},
@@ -244,19 +464,40 @@ function render(){
 }
 
 async function saveData(){
-  localStorage.setItem('loanbook_v2_full', JSON.stringify(data));
+  // Always save locally first - critical for hold
+  try{
+    localStorage.setItem('loanbook_v2_full', JSON.stringify(data));
+  }catch(e){ console.error('Local save fail', e); }
+  // Also save todo_lists separately for backup
+  try{
+    localStorage.setItem('fintrack_todos_backup', JSON.stringify(data.todo_lists));
+  }catch(e){}
   if(!navigator.onLine){ localStorage.setItem('fintrack_pending_sync','true'); }
   try{
-    await fetch(CONFIG.API_URL+'/'+CONFIG.BIN_ID,{method:'PUT', headers:{'Content-Type':'application/json','X-Master-Key':CONFIG.API_KEY}, body:JSON.stringify(data)});
+    // Ensure data has all required fields for JSONBin
+    const payload = {
+      loans: data.loans||[],
+      incomes: (data.incomes||[]).filter(i=>i.source!=='loan'),
+      expenses: data.expenses||[],
+      assets: data.assets||[],
+      dsp_fund: data.dsp_fund||null,
+      todo_lists: data.todo_lists||[]
+    };
+    await fetch(CONFIG.API_URL+'/'+CONFIG.BIN_ID,{method:'PUT', headers:{'Content-Type':'application/json','X-Master-Key':CONFIG.API_KEY}, body:JSON.stringify(payload)});
     document.getElementById('statusText').textContent='Saved • Online';
-  }catch(e){ document.getElementById('statusText').textContent='Saved Locally'; }
+    const syncEl=document.getElementById('syncText');
+    if(syncEl) syncEl.textContent=new Date().toLocaleTimeString();
+  }catch(e){ 
+    document.getElementById('statusText').textContent='Saved Locally'; 
+    console.log('Online save fail, local saved', e);
+  }
 }
 
 // List CRUD
 window.openListModal=()=>{ editListId=null; document.getElementById('listModalTitle').textContent='New List'; document.getElementById('listName').value=''; document.getElementById('listType').value='custom'; document.getElementById('listIcon').value=''; document.getElementById('listDesc').value=''; document.getElementById('listModalBg').classList.add('open'); };
 window.closeListModal=()=>document.getElementById('listModalBg').classList.remove('open');
 window.editList=(id)=>{
-  const list=data.todo_lists.find(l=>l.id===id); if(!list) return;
+  const list=data.todo_lists.find(l=>String(l.id)===String(id)); if(!list) return;
   editListId=id; document.getElementById('listModalTitle').textContent='Edit List'; document.getElementById('listName').value=list.name; document.getElementById('listType').value=list.type; document.getElementById('listIcon').value=list.icon; document.getElementById('listDesc').value=list.desc||''; document.getElementById('listModalBg').classList.add('open');
 };
 window.saveList=async()=>{
@@ -266,7 +507,7 @@ window.saveList=async()=>{
   const desc=document.getElementById('listDesc').value.trim();
   if(!name){ alert('List name dalo'); return; }
   if(editListId){
-    const idx=data.todo_lists.findIndex(l=>l.id===editListId);
+    const idx=data.todo_lists.findIndex(l=>String(l.id)===String(editListId));
     if(idx!==-1){ data.todo_lists[idx]={...data.todo_lists[idx], name, type, icon, desc, color:type}; }
   } else {
     data.todo_lists.push({id:Date.now(), name, type, icon, desc, color:type, items:[]});
@@ -275,7 +516,7 @@ window.saveList=async()=>{
 };
 window.deleteList=async(id)=>{
   if(!confirm('Delete this whole list? All tasks will be deleted!')) return;
-  data.todo_lists=data.todo_lists.filter(l=>l.id!==id);
+  data.todo_lists=data.todo_lists.filter(l=>String(l.id)!==String(id));
   render(); await saveData();
 };
 
@@ -295,13 +536,14 @@ window.openQuickAdd=()=>{
 };
 window.closeTaskModal=()=>document.getElementById('taskModalBg').classList.remove('open');
 window.saveTask=async()=>{
-  const listId=parseInt(document.getElementById('taskListSelect').value);
+  const rawId=document.getElementById('taskListSelect').value;
+  const listId=parseInt(rawId);
   const text=document.getElementById('taskText').value.trim();
   const priority=document.getElementById('taskPriority').value;
   const due=document.getElementById('taskDue').value;
   const note=document.getElementById('taskNote').value.trim();
   if(!text){ alert('Task likho'); return; }
-  const list=data.todo_lists.find(l=>l.id===listId);
+  const list=data.todo_lists.find(l=>String(l.id)===String(listId) || l.id===listId);
   if(!list){ alert('List not found'); return; }
   list.items.unshift({id:Date.now(), text, done:false, priority, dueDate:due, note, createdAt:new Date().toISOString()});
   closeTaskModal(); render(); await saveData();
@@ -328,7 +570,7 @@ function detectCategoryFromTask(taskText, listType){
 }
 
 window.toggleTask=async(listId, taskId)=>{
-  const list=data.todo_lists.find(l=>l.id===listId); if(!list) return;
+  const list=data.todo_lists.find(l=>String(l.id)===String(listId) || l.id===listId); if(!list) return;
   const task=list.items.find(t=>t.id===taskId); if(!task) return;
   const wasDone=task.done;
   task.done=!task.done;
@@ -390,7 +632,7 @@ window.confirmExpenseAdd=async()=>{
 
 window.deleteTask=async(listId, taskId)=>{
   if(!confirm('Delete task?')) return;
-  const list=data.todo_lists.find(l=>l.id===listId); if(!list) return;
+  const list=data.todo_lists.find(l=>String(l.id)===String(listId) || l.id===listId); if(!list) return;
   list.items=list.items.filter(t=>t.id!==taskId);
   render(); await saveData();
 };
@@ -411,7 +653,7 @@ document.getElementById('taskModalBg').addEventListener('click',e=>{if(e.target.
 
 load();
 </script>
-<script src="./auth.js"></script>
-<script src="./pwa.js"></script>
+<script src="auth.js"></script>
+<script src="pwa.js"></script>
 <script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
 </html>

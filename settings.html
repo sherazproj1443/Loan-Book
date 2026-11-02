@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<meta name="theme-color" content="#0f1210">
+<title>Settings - Financial Track Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0e0c;--card:#131a16;--card2:#1a2320;--border:#1f2e28;--border2:#26362f;--text:#eef6f0;--muted:#7a9480;--green:#1ed760;--red:#ff4d5a;--blue:#4da3ff;--yellow:#ffb020}
+[data-theme="light"]{--bg:#f5f7f6;--card:#ffffff;--card2:#eef2ef;--border:#dde6df;--border2:#c8d8cc;--text:#0f1a13;--muted:#6b8473}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
+body{background:var(--bg);color:var(--text);min-height:100vh}
+.container{max-width:400px;margin:0 auto;padding:12px 14px 100px}
+.topbar{position:sticky;top:0;z-index:40;background:var(--bg);padding:12px 0 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.back-btn{width:36px;height:36px;border-radius:10px;background:var(--card);border:1px solid var(--border);display:grid;place-items:center;cursor:pointer}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px}
+.label{font-size:10px;text-transform:uppercase;color:var(--muted);font-weight:700;letter-spacing:0.6px;margin-bottom:6px}
+.value{font-size:14px;font-weight:700}
+.row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.row:last-child{border:none}
+.btn{border:none;border-radius:12px;padding:12px;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;flex:1;font-size:12px}
+.btn-primary{background:var(--text);color:var(--bg)} .btn-outline{background:var(--card2);border:1px solid var(--border);color:var(--text)}
+.switch{width:44px;height:26px;background:var(--card2);border-radius:99px;position:relative;cursor:pointer;border:1px solid var(--border);transition:.3s}
+.switch.on{background:var(--green)}
+.switch::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.3s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.switch.on::after{transform:translateX(18px)}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="topbar">
+  <div class="back-btn" onclick="history.back()">←</div>
+  <b style="font-size:16px">⚙️ Settings</b>
+  <span style="margin-left:auto;font-size:10px;color:var(--muted)" id="statusText">--</span>
+</div>
+
+<div class="card">
+  <div class="label">Appearance</div>
+  <div class="row"><span>🌗 Theme</span><div style="display:flex;align-items:center;gap:8px"><span id="themeLabel" style="font-size:11px;color:var(--muted)">Dark</span><div class="switch" id="themeSwitch" onclick="toggleTheme()"></div></div></div>
+  <div class="row"><span>🎨 Accent Color</span><span style="font-size:11px;color:var(--muted)">Green (default)</span></div>
+</div>
+
+<div class="card">
+  <div class="label">Security</div>
+  <div class="row"><span>🔒 App PIN</span><button class="btn btn-outline" style="flex:0;padding:6px 12px;font-size:11px" onclick="window.setupPin && window.setupPin()">Setup</button></div>
+  <div class="row"><span>⏱️ Auto Lock</span><span style="font-size:11px;color:var(--muted)">2 min + on close</span></div>
+</div>
+
+<div class="card">
+  <div class="label">Data & Sync</div>
+  <div class="row"><span>☁️ JSONBin Sync</span><span id="syncStatus" style="font-size:10px;color:var(--muted)">--</span></div>
+  <div class="row"><span>💾 Local Backup</span><button class="btn btn-outline" style="flex:0;padding:6px 10px;font-size:10px" onclick="exportData()">Export</button></div>
+  <div class="row"><span>🔄 Clear Cache</span><button class="btn btn-outline" style="flex:0;padding:6px 10px;font-size:10px;color:var(--red)" onclick="clearCache()">Clear</button></div>
+</div>
+
+<div class="card">
+  <div class="label">About</div>
+  <div class="row"><span>📱 App</span><span style="font-size:11px">Financial Track Pro v2.0</span></div>
+  <div class="row"><span>🛡️ Loan Logic</span><span style="font-size:10px;color:var(--green)">Fixed: Loan not in Salary</span></div>
+  <div class="row"><span>👤 Developer</span><span style="font-size:11px;color:var(--muted)">Your App</span></div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+  <button class="btn btn-outline" onclick="location.href='index.html'">📊 Dashboard</button>
+  <button class="btn btn-primary" onclick="location.href='todos.html'">✅ To-Do</button>
+</div>
+</div>
+
+<script>
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme');
+  const next=cur==='light'?'dark':'light';
+  if(next==='light'){ document.documentElement.setAttribute('data-theme','light'); localStorage.setItem('fintrack_theme','light'); document.getElementById('themeLabel').textContent='Light'; document.getElementById('themeSwitch').classList.add('on'); }
+  else { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('fintrack_theme','dark'); document.getElementById('themeLabel').textContent='Dark'; document.getElementById('themeSwitch').classList.remove('on'); }
+}
+(function(){
+  const saved=localStorage.getItem('fintrack_theme')||'dark';
+  if(saved==='light'){ document.documentElement.setAttribute('data-theme','light'); setTimeout(()=>{ document.getElementById('themeLabel').textContent='Light'; document.getElementById('themeSwitch').classList.add('on'); },50); }
+  const local=localStorage.getItem('loanbook_v2_full');
+  document.getElementById('syncStatus').textContent= local ? 'Local data available' : 'No local data';
+})();
+function exportData(){
+  const data=localStorage.getItem('loanbook_v2_full');
+  if(!data){ alert('No data'); return; }
+  const blob=new Blob([data],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='fintrack-backup-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+}
+function clearCache(){
+  if(confirm('Clear cached images? Data will stay safe (JSONBin + localStorage).')){
+    caches.keys().then(k=>k.forEach(n=>caches.delete(n)));
+    alert('Cache cleared');
+  }
+}
+</script>
+<script src="auth.js"></script>
+<script src="pwa.js"></script>
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
+</html>
