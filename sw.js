@@ -1,5 +1,4 @@
-
-const CACHE_NAME = 'fintrack-pro-v8-3icons';
+const CACHE_NAME = "fintrack-pro-v9-all-hamburger"; // old: 'fintrack-pro-v8-3icons';
 const ASSETS = [
   'index.html',
   'transactions.html',
@@ -9,6 +8,7 @@ const ASSETS = [
   'analytics.html',
   'assets.html',
   'todos.html',
+  'settings.html',
   'auth.js',
   'pwa.js',
   'jsonbin-config.js',
